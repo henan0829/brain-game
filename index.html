@@ -1,0 +1,1486 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>脑力对决</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Nunito:wght@400;700;800;900&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+:root{
+  --bg:#0A0A14; --s2:#1C1C2E; --s3:#252538;
+  --border:rgba(255,255,255,0.08);
+  --text:#fff; --muted:rgba(255,255,255,0.4);
+  --red:#FF5F5F; --teal:#3ECFB2; --yellow:#FFD166; --blue:#4DA6FF; --purple:#A78BFA;
+}
+html,body{width:100%;height:100%;background:#000;display:flex;align-items:center;justify-content:center;font-family:'Nunito',sans-serif;overflow:hidden;}
+
+/* DEVICE FRAME */
+.device{position:relative;width:390px;height:844px;background:#111;border-radius:52px;
+  box-shadow:0 0 0 1.5px #2a2a2a,0 0 0 3.5px #111,0 60px 140px rgba(0,0,0,.9),inset 0 0 0 1px rgba(255,255,255,.05);
+  overflow:hidden;flex-shrink:0;}
+.device::before{content:'';position:absolute;left:-3px;top:110px;width:3px;height:30px;background:#222;border-radius:3px 0 0 3px;box-shadow:0 44px 0 #222,0 80px 0 #222;}
+.device::after{content:'';position:absolute;right:-3px;top:150px;width:3px;height:62px;background:#222;border-radius:0 3px 3px 0;}
+
+/* SCREEN */
+.screen-wrap{position:absolute;inset:0;background:var(--bg);border-radius:52px;overflow:hidden;display:flex;flex-direction:column;}
+
+/* Dynamic Island */
+.di{position:absolute;top:12px;left:50%;transform:translateX(-50%);width:118px;height:34px;background:#000;border-radius:17px;z-index:999;pointer-events:none;}
+.di::after{content:'';position:absolute;right:11px;top:50%;transform:translateY(-50%);width:10px;height:10px;background:#1a1a2e;border-radius:50%;border:1px solid #333;box-shadow:inset 0 0 0 3px rgba(0,80,255,.5);}
+
+/* STATUS BAR */
+.status-bar{height:54px;display:flex;align-items:flex-end;justify-content:space-between;padding:0 24px 8px;flex-shrink:0;}
+.sb-time{font-family:'DM Mono',monospace;font-size:15px;font-weight:500;color:var(--text);}
+.sb-icons{display:flex;gap:5px;align-items:center;}
+
+/* SCREENS — use display:none / display:flex */
+.page{display:none;flex-direction:column;flex:1;min-height:0;overflow:hidden;}
+.page.active{display:flex;}
+
+/* Scrollable content inside page */
+.scroll{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;padding-bottom:8px;}
+.scroll::-webkit-scrollbar{display:none;}
+
+/* HOME BAR */
+.hbar{height:26px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.hbar i{display:block;width:130px;height:5px;background:rgba(255,255,255,.18);border-radius:99px;}
+
+/* ── TYPOGRAPHY & LAYOUT ── */
+.px{padding-left:22px;padding-right:22px;}
+.label{font-size:11px;letter-spacing:.16em;text-transform:uppercase;font-weight:700;color:var(--muted);}
+.title{font-size:30px;font-weight:900;line-height:1.1;color:var(--text);}
+.sub{font-size:14px;color:var(--muted);line-height:1.55;font-weight:600;}
+
+/* ── BUTTONS ── */
+.btn{display:block;width:100%;height:56px;border:none;border-radius:16px;font-size:16px;font-weight:800;font-family:'Nunito',sans-serif;cursor:pointer;transition:transform .12s,opacity .1s;}
+.btn:active{transform:scale(.96);opacity:.85;}
+.btn-teal{background:linear-gradient(135deg,var(--teal),#2ab8a0);color:#000;box-shadow:0 4px 20px rgba(62,207,178,.3);}
+.btn-red{background:linear-gradient(135deg,var(--red),#e63946);color:#fff;box-shadow:0 4px 20px rgba(255,95,95,.3);}
+.btn-yellow{background:linear-gradient(135deg,var(--yellow),#f4a261);color:#000;box-shadow:0 4px 20px rgba(255,209,102,.25);}
+.btn-ghost{background:var(--s2);color:var(--muted);box-shadow:none;}
+.btn-sm{height:44px;font-size:14px;border-radius:12px;}
+
+.back-btn{display:flex;align-items:center;gap:6px;background:none;border:none;color:var(--muted);font-size:14px;font-weight:700;font-family:'Nunito',sans-serif;cursor:pointer;padding:0;}
+.back-btn:active{color:var(--text);}
+
+/* ── CARDS ── */
+.card-block{background:var(--s2);border-radius:22px;border:1px solid var(--border);padding:18px;}
+
+/* ── HOME ── */
+.home-hero{padding:54px 22px 18px;}
+.mode-grid{display:flex;flex-direction:column;gap:11px;padding:0 18px 18px;}
+.mode-item{background:var(--s2);border-radius:22px;padding:18px 18px 14px;border:1px solid var(--border);cursor:pointer;transition:transform .12s,opacity .1s;}
+.mode-item:active{transform:scale(.97);opacity:.9;}
+.mode-item.m-teal{border-color:rgba(62,207,178,.22);}
+.mode-item.m-red{border-color:rgba(255,95,95,.22);}
+.mode-item.m-yellow{border-color:rgba(255,209,102,.22);}
+.mi-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+.mi-icon{font-size:34px;}
+.mi-badge{font-size:10px;font-weight:800;padding:4px 10px;border-radius:99px;letter-spacing:.05em;}
+.bg-teal{background:rgba(62,207,178,.15);color:var(--teal);}
+.bg-red{background:rgba(255,95,95,.15);color:var(--red);}
+.bg-yellow{background:rgba(255,209,102,.15);color:var(--yellow);}
+.mi-title{font-size:19px;font-weight:900;color:var(--text);margin-bottom:3px;}
+.mi-desc{font-size:13px;color:var(--muted);line-height:1.45;}
+.mi-tags{display:flex;gap:6px;margin-top:11px;flex-wrap:wrap;}
+.tag{font-size:11px;font-weight:700;padding:3px 9px;background:rgba(255,255,255,.06);border-radius:99px;color:var(--muted);}
+
+/* ── SETUP ── */
+.setup-body{flex:1;display:flex;flex-direction:column;gap:14px;padding:12px 22px 22px;overflow-y:auto;}
+.setup-body::-webkit-scrollbar{display:none;}
+.input-field{width:100%;background:var(--s3);border:1.5px solid var(--border);border-radius:12px;padding:13px 16px;font-size:16px;font-weight:700;font-family:'Nunito',sans-serif;color:var(--text);outline:none;}
+.input-field:focus{border-color:rgba(255,255,255,.3);}
+.input-field::placeholder{color:var(--muted);}
+.diff-row{display:flex;gap:7px;}
+.diff-opt{flex:1;height:42px;border:1.5px solid var(--border);border-radius:11px;background:transparent;color:var(--muted);font-size:13px;font-weight:800;font-family:'Nunito',sans-serif;cursor:pointer;transition:all .15s;}
+.diff-opt.on{border-color:var(--teal);color:var(--teal);background:rgba(62,207,178,.1);}
+.diff-opt:active{transform:scale(.96);}
+
+/* ── CARD GAME ── */
+.cg-body{flex:1;display:flex;flex-direction:column;padding:8px 14px 10px;min-height:0;}
+
+/* PK scoreboard */
+.pk-board{display:flex;gap:8px;margin-bottom:10px;}
+.pk-cell{flex:1;background:var(--s2);border-radius:14px;padding:10px 12px;border:2px solid transparent;transition:border-color .3s,background .3s;}
+.pk-cell.my-turn{border-color:var(--teal);background:rgba(62,207,178,.08);}
+.pk-cell.p1-turn{border-color:var(--red);background:rgba(255,95,95,.08);}
+.pk-name{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;}
+.pk-pts{font-size:26px;font-weight:900;font-family:'DM Mono',monospace;color:var(--text);}
+.pk-indicator{font-size:10px;font-weight:700;color:var(--teal);min-height:15px;}
+
+/* Solo stats */
+.stat-row{display:flex;gap:8px;margin-bottom:10px;}
+.stat-box{flex:1;background:var(--s2);border-radius:12px;padding:8px 10px;}
+.stat-lbl{font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:700;}
+.stat-val{font-size:22px;font-weight:900;font-family:'DM Mono',monospace;color:var(--text);}
+.c-red{color:var(--red);}
+.c-teal{color:var(--teal);}
+
+/* Timer */
+.timer-wrap{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
+.timer-track{flex:1;height:5px;background:var(--s3);border-radius:99px;overflow:hidden;}
+.timer-bar{height:100%;background:linear-gradient(90deg,var(--teal),var(--blue));border-radius:99px;transition:width 1s linear,background .3s;}
+.timer-n{font-size:13px;font-weight:800;font-family:'DM Mono',monospace;color:var(--text);width:30px;text-align:right;}
+
+/* Progress */
+.prog-wrap{margin-bottom:10px;}
+.prog-lbl{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);font-family:'DM Mono',monospace;margin-bottom:5px;}
+.prog-track{height:5px;background:var(--s3);border-radius:99px;overflow:hidden;}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--teal),var(--red));border-radius:99px;transition:width .4s;}
+
+/* Card grid */
+.card-grid{display:grid;gap:8px;flex:1;align-content:center;}
+.g3{grid-template-columns:repeat(3,1fr);}
+.g4{grid-template-columns:repeat(4,1fr);}
+
+.card{aspect-ratio:1;perspective:700px;cursor:pointer;user-select:none;}
+.card-inner{width:100%;height:100%;position:relative;transform-style:preserve-3d;transition:transform .3s cubic-bezier(.4,0,.2,1);border-radius:14px;}
+.card.flip .card-inner,.card.done .card-inner{transform:rotateY(180deg);}
+.cface{position:absolute;inset:0;border-radius:14px;display:flex;align-items:center;justify-content:center;backface-visibility:hidden;-webkit-backface-visibility:hidden;}
+.cback{background:var(--s2);border:1px solid rgba(255,255,255,.07);}
+.cback::after{content:'✦';font-size:15px;color:rgba(255,255,255,.12);}
+.cfront{background:var(--s3);transform:rotateY(180deg);border:1px solid rgba(255,255,255,.07);font-size:clamp(16px,6.5vw,30px);}
+.card.done .cfront{background:rgba(62,207,178,.15);border-color:var(--teal);}
+.card.done-red .cfront{background:rgba(255,95,95,.15);border-color:var(--red);}
+.card.wrong .card-inner{animation:shake .28s ease;}
+@keyframes shake{0%,100%{transform:rotateY(180deg) translateX(0);}30%{transform:rotateY(180deg) translateX(-5px);}70%{transform:rotateY(180deg) translateX(5px);}}
+
+/* CG footer */
+.cg-footer{display:flex;gap:8px;padding:8px 14px 8px;flex-shrink:0;}
+.cg-footer .btn{height:48px;font-size:14px;flex:1;}
+
+/* Turn flash banner */
+.turn-flash{position:absolute;top:0;left:0;right:0;background:var(--teal);color:#000;text-align:center;padding:9px;font-size:14px;font-weight:900;transform:translateY(-100%);transition:transform .25s;z-index:50;border-radius:0 0 16px 16px;}
+.turn-flash.show{transform:translateY(0);}
+
+/* ── DRAW & GUESS ── */
+.dg-phase{display:none;flex-direction:column;flex:1;min-height:0;}
+.dg-phase.active{display:flex;}
+
+/* Flash phase */
+.flash-content{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:0 20px;}
+.flash-card{width:100%;background:var(--s2);border-radius:22px;padding:28px 20px;text-align:center;border:1px solid var(--border);min-height:120px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;}
+.flash-zh{font-size:40px;font-weight:900;color:var(--text);}
+.flash-en{font-size:14px;color:var(--muted);font-weight:600;}
+.flash-cat{font-size:10px;font-weight:700;padding:3px 10px;border-radius:99px;background:rgba(62,207,178,.15);color:var(--teal);margin-top:4px;}
+.flash-prog-bar{width:100%;height:5px;background:var(--s3);border-radius:99px;overflow:hidden;}
+.flash-prog-fill{height:100%;background:linear-gradient(90deg,var(--teal),var(--blue));border-radius:99px;transition:width 3s linear;}
+.flash-dots{display:flex;gap:4px;flex-wrap:wrap;justify-content:center;max-width:260px;}
+.fdot{width:8px;height:8px;border-radius:50%;background:var(--s3);}
+.fdot.seen{background:var(--teal);}
+.fdot.now{background:var(--yellow);transform:scale(1.3);}
+
+/* Distraction phase */
+.dist-content{flex:1;display:flex;flex-direction:column;gap:10px;padding:0 18px 18px;overflow-y:auto;}
+.dist-content::-webkit-scrollbar{display:none;}
+.mg-card{background:var(--s2);border-radius:18px;padding:16px;border:1px solid var(--border);}
+.mg-title{font-size:15px;font-weight:900;color:var(--text);margin-bottom:6px;}
+#mg-content{margin-top:10px;}
+
+/* Mini game elements */
+.seq-disp{display:flex;gap:7px;justify-content:center;flex-wrap:wrap;min-height:52px;align-items:center;}
+.seq-n{width:42px;height:42px;background:var(--s3);border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:900;font-family:'DM Mono',monospace;color:var(--text);transition:background .2s,color .2s;}
+.seq-n.lit{background:var(--yellow);color:#000;}
+.seq-btns{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin-top:8px;}
+.seq-btn{width:42px;height:42px;background:var(--s3);border:1px solid var(--border);border-radius:11px;font-size:16px;font-weight:900;font-family:'DM Mono',monospace;color:var(--text);cursor:pointer;transition:transform .1s;}
+.seq-btn:active{transform:scale(.88);}
+.color-grid-mg{display:grid;gap:7px;}
+.color-cell{aspect-ratio:1;border-radius:11px;cursor:pointer;border:1px solid var(--border);transition:transform .15s;}
+.color-cell:active{transform:scale(.9);}
+.math-q{font-size:34px;font-weight:900;font-family:'DM Mono',monospace;color:var(--text);text-align:center;margin:8px 0;}
+.math-opts{display:flex;gap:8px;}
+.math-opt{flex:1;height:50px;border:1.5px solid var(--border);border-radius:13px;font-size:20px;font-weight:900;font-family:'DM Mono',monospace;background:var(--s3);color:var(--text);cursor:pointer;transition:background .15s;}
+.math-opt:active{opacity:.7;}
+
+/* Recall phase */
+.recall-content{flex:1;display:flex;flex-direction:column;gap:12px;padding:0 18px 18px;overflow-y:auto;}
+.recall-content::-webkit-scrollbar{display:none;}
+.recall-q-card{background:var(--s2);border-radius:18px;padding:18px;border:1px solid var(--border);}
+.recall-opts{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.recall-opt{background:var(--s2);border:1.5px solid var(--border);border-radius:14px;padding:14px 10px;font-size:15px;font-weight:800;font-family:'Nunito',sans-serif;color:var(--text);cursor:pointer;text-align:center;transition:border-color .2s,background .2s;}
+.recall-opt:active{transform:scale(.95);}
+.recall-opt.ok{border-color:var(--teal);background:rgba(62,207,178,.15);color:var(--teal);}
+.recall-opt.no{border-color:var(--red);background:rgba(255,95,95,.1);color:var(--red);}
+.recall-opt.reveal{border-color:var(--teal);background:rgba(62,207,178,.08);color:var(--teal);}
+
+/* ── RESULTS ── */
+.results-body{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:16px 22px 22px;overflow-y:auto;}
+.results-body::-webkit-scrollbar{display:none;}
+.res-icon{font-size:70px;animation:popIn .45s cubic-bezier(.34,1.56,.64,1);}
+@keyframes popIn{0%{transform:scale(0) rotate(-8deg);opacity:0;}100%{transform:scale(1) rotate(0);opacity:1;}}
+.res-title{font-size:34px;font-weight:900;color:var(--text);text-align:center;}
+.res-sub{font-size:14px;color:var(--muted);text-align:center;line-height:1.6;white-space:pre-line;}
+.res-stats{display:flex;gap:8px;width:100%;}
+.res-stat{flex:1;background:var(--s2);border-radius:16px;padding:14px 8px;text-align:center;border:1px solid var(--border);}
+.rs-val{font-size:26px;font-weight:900;font-family:'DM Mono',monospace;color:var(--text);}
+.rs-lab{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;font-weight:700;margin-top:3px;}
+.pk-res-wrap{width:100%;display:flex;flex-direction:column;gap:8px;}
+.pk-res-row{background:var(--s2);border-radius:16px;padding:14px 16px;display:flex;align-items:center;gap:12px;border:2px solid transparent;}
+.pk-res-row.win{border-color:var(--yellow);background:rgba(255,209,102,.07);}
+.pra-name{flex:1;font-size:16px;font-weight:900;color:var(--text);}
+.pra-pts{font-size:26px;font-weight:900;font-family:'DM Mono',monospace;color:var(--text);}
+.win-tag{font-size:11px;font-weight:700;padding:3px 9px;border-radius:99px;background:rgba(255,209,102,.2);color:var(--yellow);display:inline-block;margin-top:2px;}
+.lose-tag{font-size:11px;font-weight:700;padding:3px 9px;border-radius:99px;background:rgba(255,255,255,.06);color:var(--muted);display:inline-block;margin-top:2px;}
+.res-btns{display:flex;flex-direction:column;gap:8px;width:100%;}
+
+/* ── OVERLAY / MODAL ── */
+.overlay{position:absolute;inset:0;background:rgba(10,10,20,.93);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);display:none;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:32px 28px;z-index:500;border-radius:52px;}
+.overlay.show{display:flex;}
+.ov-icon{font-size:64px;animation:popIn .4s cubic-bezier(.34,1.56,.64,1);}
+.ov-title{font-size:28px;font-weight:900;color:var(--text);text-align:center;line-height:1.15;}
+.ov-sub{font-size:14px;color:var(--muted);text-align:center;line-height:1.65;max-width:280px;}
+.ov-btns{display:flex;flex-direction:column;gap:9px;width:100%;}
+.cd-num{font-size:110px;font-weight:900;font-family:'DM Mono',monospace;color:var(--text);animation:pulse 1s ease infinite;}
+@keyframes pulse{0%,100%{transform:scale(1);}50%{transform:scale(1.06);}}
+
+/* LEADERBOARD */
+.lb-wrap{margin:0 18px 18px;background:var(--s2);border-radius:18px;padding:14px 16px;border:1px solid var(--border);}
+.lb-row{display:flex;align-items:center;gap:10px;padding:5px 0;}
+.lb-rank{width:20px;font-size:12px;font-weight:800;font-family:'DM Mono',monospace;color:var(--muted);}
+.lb-rank.g{color:var(--yellow);}
+.lb-rank.s{color:#C0C0C0;}
+.lb-rank.b{color:#CD7F32;}
+.lb-name{flex:1;font-size:13px;font-weight:700;color:var(--text);}
+.lb-score{font-size:13px;font-weight:800;font-family:'DM Mono',monospace;color:var(--teal);}
+
+/* ── RATING BADGE ── */
+.rating-badge{display:flex;flex-direction:column;align-items:center;gap:6px;background:var(--s2);border-radius:22px;padding:18px 16px;border:2px solid transparent;width:100%;}
+.rating-badge.r-npc{border-color:rgba(255,255,255,.12);}
+.rating-badge.r-la{border-color:rgba(255,95,95,.4);background:rgba(255,95,95,.06);}
+.rating-badge.r-normal{border-color:rgba(77,166,255,.35);background:rgba(77,166,255,.06);}
+.rating-badge.r-hang{border-color:rgba(62,207,178,.4);background:rgba(62,207,178,.07);}
+.rating-badge.r-top{border-color:rgba(255,209,102,.45);background:rgba(255,209,102,.07);}
+.rating-badge.r-god{border-color:rgba(167,139,250,.5);background:linear-gradient(135deg,rgba(167,139,250,.1),rgba(255,209,102,.06));}
+.rating-emoji{font-size:48px;line-height:1;animation:popIn .45s cubic-bezier(.34,1.56,.64,1);}
+.rating-title{font-size:26px;font-weight:900;color:var(--text);}
+.rating-desc{font-size:12px;color:var(--muted);text-align:center;line-height:1.5;max-width:240px;}
+
+/* score meter */
+.score-meter{width:100%;display:flex;flex-direction:column;gap:7px;}
+.meter-labels{display:flex;justify-content:space-between;font-size:10px;font-family:'DM Mono',monospace;color:var(--muted);}
+.meter-track{height:10px;background:var(--s3);border-radius:99px;overflow:visible;position:relative;margin:4px 0;}
+.meter-fill{height:100%;border-radius:99px;transition:width 1.2s cubic-bezier(.4,0,.2,1);}
+.meter-avg-line{position:absolute;top:-5px;bottom:-5px;width:2px;background:rgba(255,255,255,.25);border-radius:2px;z-index:2;}
+.meter-avg-lbl{position:absolute;top:-18px;font-size:9px;color:rgba(255,255,255,.35);font-weight:700;transform:translateX(-50%);white-space:nowrap;}
+.meter-dot{position:absolute;top:50%;width:16px;height:16px;background:#fff;border-radius:50%;transform:translate(-50%,-50%);box-shadow:0 0 0 3px var(--bg),0 2px 8px rgba(0,0,0,.5);transition:left 1.2s cubic-bezier(.4,0,.2,1);z-index:3;}
+
+/* taunt */
+.taunt-box{background:rgba(255,95,95,.07);border:1px solid rgba(255,95,95,.2);border-radius:16px;padding:14px 16px;width:100%;}
+.taunt-lbl{font-size:10px;font-weight:700;color:var(--red);letter-spacing:.1em;text-transform:uppercase;margin-bottom:5px;}
+.taunt-txt{font-size:14px;color:var(--text);line-height:1.55;font-weight:600;}
+
+/* ── HISTORY PAGE ── */
+.hist-header{padding:54px 22px 12px;}
+.chart-wrap{background:var(--s2);border-radius:20px;padding:16px;border:1px solid var(--border);margin-bottom:12px;}
+.chart-title{font-size:13px;font-weight:900;color:var(--text);margin-bottom:2px;}
+.chart-sub{font-size:11px;color:var(--muted);margin-bottom:12px;}
+.chart-area{position:relative;width:100%;height:120px;}
+canvas#hist-chart{display:block;width:100%!important;height:120px!important;}
+
+.hist-stats-row{display:flex;gap:8px;margin-bottom:12px;}
+.hs-card{flex:1;background:var(--s2);border-radius:14px;padding:11px;text-align:center;border:1px solid var(--border);}
+.hs-val{font-size:21px;font-weight:900;font-family:'DM Mono',monospace;color:var(--text);}
+.hs-lab{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;font-weight:700;margin-top:2px;}
+
+.hist-list{display:flex;flex-direction:column;gap:7px;}
+.hist-item{background:var(--s2);border-radius:14px;padding:11px 14px;border:1px solid var(--border);display:flex;align-items:center;gap:10px;}
+.hi-dot{width:36px;height:36px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+.hi-info{flex:1;min-width:0;}
+.hi-rating{font-size:13px;font-weight:900;color:var(--text);}
+.hi-detail{font-size:11px;color:var(--muted);margin-top:1px;}
+.hi-right{text-align:right;}
+.hi-score{font-size:20px;font-weight:900;font-family:'DM Mono',monospace;color:var(--text);}
+.hi-delta{font-size:11px;font-weight:700;margin-top:1px;}
+.hi-delta.up{color:var(--teal);}
+.hi-delta.dn{color:var(--red);}
+.hi-delta.eq{color:var(--muted);}
+.empty-state{text-align:center;padding:40px 20px;color:var(--muted);font-size:14px;line-height:1.7;}
+
+/* bottom nav */
+.bnav{display:flex;padding:6px 14px 0;gap:6px;flex-shrink:0;border-top:1px solid var(--border);}
+.bntab{flex:1;height:42px;border:none;background:transparent;font-size:12px;font-weight:800;font-family:'Nunito',sans-serif;color:var(--muted);cursor:pointer;border-radius:10px;transition:all .15s;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;}
+.bntab span{font-size:18px;line-height:1;}
+.bntab.on{background:var(--s2);color:var(--teal);}
+.bntab:active{transform:scale(.93);}
+
+/* RESPONSIVE - real phone fills screen */
+@media(max-width:430px){
+  .device,.screen-wrap{border-radius:0!important;}
+  .device{width:100vw;height:100vh;}
+  .device::before,.device::after,.di{display:none!important;}
+  .overlay{border-radius:0!important;}
+}
+</style>
+</head>
+<body>
+<div class="device">
+  <div class="screen-wrap" id="app">
+    <div class="di"></div>
+
+    <!-- ══════════════════════════════════
+         HOME
+    ══════════════════════════════════ -->
+    <div class="page active" id="pg-home">
+      <div class="status-bar">
+        <span class="sb-time" id="clock">9:41</span>
+        <div class="sb-icons">
+          <svg width="16" height="11" fill="white" viewBox="0 0 16 11"><rect x="0" y="5.5" width="2.5" height="5.5" rx="1" opacity=".35"/><rect x="4" y="3.5" width="2.5" height="7.5" rx="1" opacity=".6"/><rect x="8" y="1.5" width="2.5" height="9.5" rx="1" opacity=".8"/><rect x="12" y="0" width="2.5" height="11" rx="1"/></svg>
+          <svg width="25" height="12" fill="white" viewBox="0 0 25 12"><rect x=".5" y=".5" width="21" height="11" rx="3.2" stroke="white" stroke-opacity=".3" fill="none"/><rect x="2" y="2" width="15" height="8" rx="2"/><path d="M22.5 4v4a2 2 0 000-4z" opacity=".35"/></svg>
+        </div>
+      </div>
+
+      <div class="scroll">
+        <div class="home-hero">
+          <div class="label" style="margin-bottom:4px;">今日训练</div>
+          <div class="title">脑力<span style="color:var(--teal);">对决</span> 🧠</div>
+        </div>
+
+        <div class="label px" style="margin-bottom:12px;">选择模式</div>
+
+        <div class="mode-grid">
+          <div class="mode-item m-teal" onclick="startSolo()">
+            <div class="mi-top"><span class="mi-icon">🃏</span><span class="mi-badge bg-teal">单人</span></div>
+            <div class="mi-title">记忆翻牌</div>
+            <div class="mi-desc">翻开卡片找到所有配对，挑战速度与记忆力极限</div>
+            <div class="mi-tags"><span class="tag">⏱ 计时</span><span class="tag">🔥 连击</span><span class="tag">3档难度</span></div>
+          </div>
+
+          <div class="mode-item m-red" onclick="showPage('pg-pksetup')">
+            <div class="mi-top"><span class="mi-icon">⚔️</span><span class="mi-badge bg-red">双人PK</span></div>
+            <div class="mi-title">对战翻牌</div>
+            <div class="mi-desc">两人同屏对战！轮流翻牌，谁配对多谁赢</div>
+            <div class="mi-tags"><span class="tag">👥 本地双人</span><span class="tag">🏆 胜负判定</span></div>
+          </div>
+
+          <div class="mode-item m-yellow" onclick="startDrawGuess()">
+            <div class="mi-top"><span class="mi-icon">🎨</span><span class="mi-badge bg-yellow">记忆挑战</span></div>
+            <div class="mi-title">我画我猜</div>
+            <div class="mi-desc">20组词语快闪 → 分心小游戏 → 随机考验你的记忆！</div>
+            <div class="mi-tags"><span class="tag">📝 快闪词</span><span class="tag">🧩 干扰关</span><span class="tag">🎯 考验</span></div>
+          </div>
+        </div>
+
+        <div class="lb-wrap">
+          <div class="label" style="margin-bottom:10px;">本周排行 🏅</div>
+          <div class="lb-row"><span class="lb-rank g">1</span><span class="lb-name">记忆大师</span><span class="lb-score">2,840</span></div>
+          <div class="lb-row"><span class="lb-rank s">2</span><span class="lb-name">闪电大脑</span><span class="lb-score">2,155</span></div>
+          <div class="lb-row"><span class="lb-rank b">3</span><span class="lb-name">你</span><span class="lb-score" id="my-best">—</span></div>
+        </div>
+      </div>
+      <div class="bnav">
+        <button class="bntab on" id="bntab-home" onclick="switchTab('home')"><span>🏠</span>主页</button>
+        <button class="bntab" id="bntab-hist" onclick="switchTab('hist')"><span>📈</span>记录</button>
+      </div>
+      <div class="hbar"><i></i></div>
+    </div>
+
+
+    <!-- ══════════════════════════════════
+         PK SETUP
+    ══════════════════════════════════ -->
+    <div class="page" id="pg-pksetup">
+      <div class="status-bar"><span class="sb-time" id="clock2">9:41</span></div>
+      <div class="setup-body">
+        <button class="back-btn" onclick="showPage('pg-home')">← 返回</button>
+        <div>
+          <div class="title" style="font-size:24px;">⚔️ 对战设置</div>
+          <div class="sub" style="margin-top:5px;">输入两位玩家名字，开始对决！</div>
+        </div>
+        <div class="card-block">
+          <div class="label" style="color:var(--red);margin-bottom:8px;">🔴 玩家 1</div>
+          <input class="input-field" id="p1name" placeholder="输入名字..." maxlength="8" type="text">
+        </div>
+        <div class="card-block">
+          <div class="label" style="color:var(--blue);margin-bottom:8px;">🔵 玩家 2</div>
+          <input class="input-field" id="p2name" placeholder="输入名字..." maxlength="8" type="text">
+        </div>
+        <div>
+          <div class="label" style="margin-bottom:9px;">选择难度</div>
+          <div class="diff-row">
+            <button class="diff-opt on" id="diff0" onclick="setDiff(0)">🌱 简单</button>
+            <button class="diff-opt" id="diff1" onclick="setDiff(1)">🔥 中等</button>
+            <button class="diff-opt" id="diff2" onclick="setDiff(2)">⚡ 困难</button>
+          </div>
+        </div>
+        <button class="btn btn-red" style="margin-top:auto;" onclick="startPK()">开始对战 ⚔️</button>
+      </div>
+      <div class="hbar"><i></i></div>
+    </div>
+
+
+    <!-- ══════════════════════════════════
+         CARD GAME
+    ══════════════════════════════════ -->
+    <div class="page" id="pg-game">
+      <div class="turn-flash" id="turn-flash">轮到你了！</div>
+      <div class="status-bar" style="padding-bottom:4px;">
+        <button class="back-btn" onclick="quitGame()">← 退出</button>
+        <span style="font-size:11px;color:var(--muted);font-weight:700;letter-spacing:.1em;text-transform:uppercase;" id="mode-tag">单人模式</span>
+      </div>
+
+      <div class="cg-body">
+        <!-- PK board -->
+        <div class="pk-board" id="pk-board" style="display:none;">
+          <div class="pk-cell" id="pkcell1">
+            <div class="pk-name" id="pkn1">玩家1</div>
+            <div class="pk-pts" id="pkp1">0</div>
+            <div class="pk-indicator" id="pki1"></div>
+          </div>
+          <div style="display:flex;align-items:center;font-size:18px;font-weight:900;color:var(--muted);">VS</div>
+          <div class="pk-cell" id="pkcell2">
+            <div class="pk-name" id="pkn2">玩家2</div>
+            <div class="pk-pts" id="pkp2">0</div>
+            <div class="pk-indicator" id="pki2"></div>
+          </div>
+        </div>
+
+        <!-- Solo stats -->
+        <div class="stat-row" id="solo-stats">
+          <div class="stat-box"><div class="stat-lbl">得分</div><div class="stat-val c-red" id="s-score">0</div></div>
+          <div class="stat-box"><div class="stat-lbl">错误</div><div class="stat-val" id="s-miss">0</div></div>
+          <div class="stat-box"><div class="stat-lbl">连击</div><div class="stat-val c-teal" id="s-combo">0</div></div>
+        </div>
+
+        <!-- Timer (solo only) -->
+        <div class="timer-wrap" id="timer-wrap">
+          <span style="font-size:11px;color:var(--muted);">⏱</span>
+          <div class="timer-track"><div class="timer-bar" id="timer-bar" style="width:100%"></div></div>
+          <div class="timer-n" id="timer-n">60</div>
+        </div>
+
+        <!-- Progress -->
+        <div class="prog-wrap">
+          <div class="prog-lbl"><span>进度</span><span id="prog-txt">0/0</span></div>
+          <div class="prog-track"><div class="prog-fill" id="prog-fill" style="width:0%"></div></div>
+        </div>
+
+        <!-- Grid -->
+        <div class="card-grid g4" id="card-grid"></div>
+      </div>
+
+      <div class="cg-footer">
+        <button class="btn btn-ghost" id="hint-btn" onclick="useHint()">💡 提示</button>
+        <button class="btn btn-red" style="flex:2;" onclick="restartCurrent()">🔄 重来</button>
+      </div>
+      <div class="hbar"><i></i></div>
+    </div>
+
+
+    <!-- ══════════════════════════════════
+         DRAW & GUESS
+    ══════════════════════════════════ -->
+    <div class="page" id="pg-dg">
+
+      <!-- Phase 1: Flash -->
+      <div class="dg-phase active" id="dg1">
+        <div class="status-bar" style="padding-bottom:4px;">
+          <button class="back-btn" onclick="quitGame()">← 退出</button>
+          <span style="font-size:11px;color:var(--muted);font-weight:700;letter-spacing:.08em;" id="flash-counter">0/20</span>
+        </div>
+        <div class="px" style="margin-bottom:4px;">
+          <div class="label">第一阶段 · 快速记忆</div>
+          <div style="font-size:20px;font-weight:900;color:var(--text);" id="dg1-sub">准备好了吗？</div>
+        </div>
+        <div class="flash-content">
+          <div class="flash-card" id="flash-card">
+            <div class="flash-zh" id="flash-zh">🚀</div>
+            <div class="flash-en" id="flash-en"></div>
+            <span class="flash-cat" id="flash-cat" style="display:none;"></span>
+          </div>
+          <div class="flash-prog-bar"><div class="flash-prog-fill" id="flash-pfill" style="width:100%"></div></div>
+          <div class="flash-dots" id="flash-dots"></div>
+          <div style="font-size:12px;color:var(--muted);text-align:center;line-height:1.5;">👀 记住这个词！可以用纸笔辅助记忆</div>
+        </div>
+        <div class="hbar"><i></i></div>
+      </div>
+
+      <!-- Phase 2: Distraction -->
+      <div class="dg-phase" id="dg2">
+        <div class="status-bar" style="padding-bottom:4px;">
+          <span style="font-size:14px;font-weight:900;color:var(--yellow);">🧩 分心关卡</span>
+          <span style="font-size:13px;font-weight:800;font-family:'DM Mono',monospace;color:var(--muted);" id="dist-timer">60s</span>
+        </div>
+        <div class="px" style="margin-bottom:10px;">
+          <div class="label">第二阶段 · 注意力干扰</div>
+          <div style="font-size:18px;font-weight:900;color:var(--text);" id="dg2-title">完成小游戏</div>
+        </div>
+        <div class="dist-content">
+          <div class="mg-card">
+            <div class="mg-title" id="mg-name">小游戏</div>
+            <div id="mg-content"></div>
+          </div>
+          <div class="card-block" style="display:flex;justify-content:space-between;align-items:center;">
+            <span class="label">分心得分</span>
+            <span style="font-size:26px;font-weight:900;font-family:'DM Mono',monospace;color:var(--yellow);" id="dist-score">0</span>
+          </div>
+        </div>
+        <div class="hbar"><i></i></div>
+      </div>
+
+      <!-- Phase 3: Recall -->
+      <div class="dg-phase" id="dg3">
+        <div class="status-bar" style="padding-bottom:4px;">
+          <span style="font-size:14px;font-weight:900;color:var(--purple);">🎯 随机考验</span>
+          <span style="font-size:13px;font-weight:800;font-family:'DM Mono',monospace;color:var(--muted);" id="recall-prog">1/5</span>
+        </div>
+        <div class="px" style="margin-bottom:10px;">
+          <div class="label">第三阶段 · 回忆测试</div>
+          <div style="font-size:18px;font-weight:900;color:var(--text);">你还记得吗？</div>
+        </div>
+        <div class="recall-content">
+          <div class="recall-q-card">
+            <div class="label" style="margin-bottom:5px;" id="recall-qnum">第 1 题</div>
+            <div style="font-size:20px;font-weight:900;color:var(--text);" id="recall-qtxt">?</div>
+            <div style="font-size:12px;color:var(--muted);margin-top:3px;" id="recall-qsub"></div>
+          </div>
+          <div class="recall-opts" id="recall-opts"></div>
+          <div class="card-block" style="display:flex;justify-content:space-between;align-items:center;">
+            <span class="label">记忆得分</span>
+            <span style="font-size:26px;font-weight:900;font-family:'DM Mono',monospace;color:var(--purple);" id="recall-score">0</span>
+          </div>
+        </div>
+        <div class="hbar"><i></i></div>
+      </div>
+
+    </div><!-- /pg-dg -->
+
+
+    <!-- ══════════════════════════════════
+         RESULTS
+    ══════════════════════════════════ -->
+    <div class="page" id="pg-results">
+      <div class="status-bar" style="flex-shrink:0;"></div>
+      <div class="scroll">
+        <div style="padding:0 18px 24px;display:flex;flex-direction:column;gap:12px;align-items:center;">
+          <div style="text-align:center;padding-top:4px;">
+            <div class="res-icon" id="res-icon" style="font-size:56px;display:block;margin-bottom:6px;">🎉</div>
+            <div id="res-title" style="font-size:28px;font-weight:900;color:var(--text);">游戏结束！</div>
+          </div>
+          <div class="rating-badge" id="rating-badge">
+            <div class="rating-emoji" id="rating-emoji">🤔</div>
+            <div class="rating-title" id="rating-title">评级中...</div>
+            <div class="rating-desc" id="rating-desc"></div>
+          </div>
+          <div class="score-meter" id="score-meter-wrap">
+            <div class="meter-labels">
+              <span>0</span>
+              <span style="color:var(--text);font-weight:700;" id="meter-score-lbl">得分 0</span>
+              <span id="meter-max-lbl">300</span>
+            </div>
+            <div class="meter-track" id="meter-track">
+              <div class="meter-fill" id="meter-fill" style="width:0%;background:linear-gradient(90deg,var(--teal),var(--blue));"></div>
+              <div class="meter-avg-line" id="meter-avg-line" style="left:50%;"><div class="meter-avg-lbl">普通人</div></div>
+              <div class="meter-dot" id="meter-dot" style="left:0%;"></div>
+            </div>
+            <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--muted);font-weight:700;padding:0 2px;">
+              <span>NPC</span><span>拉</span><span>夯</span><span>顶尖</span><span>人上人</span>
+            </div>
+          </div>
+          <div id="res-stats-solo" style="display:flex;gap:8px;width:100%;">
+            <div class="res-stat"><div class="rs-val" id="rs-score">0</div><div class="rs-lab">得分</div></div>
+            <div class="res-stat"><div class="rs-val" id="rs-time">0s</div><div class="rs-lab">用时</div></div>
+            <div class="res-stat"><div class="rs-val" id="rs-miss">0</div><div class="rs-lab">错误</div></div>
+          </div>
+          <div class="pk-res-wrap" id="res-stats-pk" style="display:none;width:100%;">
+            <div class="pk-res-row" id="pk-row1">
+              <span style="font-size:26px;">🏆</span>
+              <div style="flex:1"><div class="pra-name" id="pk-r1-name">玩家1</div><span class="win-tag" id="pk-r1-tag">胜利！</span></div>
+              <div class="pra-pts" id="pk-r1-pts">0</div>
+            </div>
+            <div class="pk-res-row" style="margin-top:6px;" id="pk-row2">
+              <span style="font-size:26px;">💪</span>
+              <div style="flex:1"><div class="pra-name" id="pk-r2-name">玩家2</div><span class="lose-tag">下次加油</span></div>
+              <div class="pra-pts" id="pk-r2-pts">0</div>
+            </div>
+          </div>
+          <div class="taunt-box" id="taunt-box">
+            <div class="taunt-lbl">🎤 系统点评</div>
+            <div class="taunt-txt" id="taunt-txt">计算中...</div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:9px;width:100%;margin-top:4px;">
+            <button class="btn btn-teal" onclick="playAgain()">再玩一次 🔄</button>
+            <button class="btn btn-ghost" onclick="showPage('pg-home')">回主页</button>
+          </div>
+        </div>
+      </div>
+      <div class="hbar"><i></i></div>
+    </div>
+
+    <!-- HISTORY PAGE -->
+    <div class="page" id="pg-history">
+      <div class="status-bar" style="flex-shrink:0;"><span class="sb-time" id="clock3">9:41</span></div>
+      <div class="scroll">
+        <div class="hist-header">
+          <div class="label" style="margin-bottom:4px;">记忆档案</div>
+          <div class="title" style="font-size:26px;">成长记录 📈</div>
+        </div>
+        <div style="padding:0 18px 18px;">
+          <div class="chart-wrap">
+            <div class="chart-title">得分趋势</div>
+            <div class="chart-sub">与普通人均分（150）对比</div>
+            <div class="chart-area"><canvas id="hist-chart"></canvas></div>
+          </div>
+          <div class="hist-stats-row">
+            <div class="hs-card"><div class="hs-val" id="hs-best">—</div><div class="hs-lab">最高分</div></div>
+            <div class="hs-card"><div class="hs-val" id="hs-avg">—</div><div class="hs-lab">平均分</div></div>
+            <div class="hs-card"><div class="hs-val" id="hs-games">0</div><div class="hs-lab">总场次</div></div>
+          </div>
+          <div class="card-block" style="margin-bottom:12px;display:flex;align-items:center;gap:12px;">
+            <div style="font-size:32px;" id="hs-cur-emoji">🤔</div>
+            <div>
+              <div style="font-size:11px;color:var(--muted);font-weight:700;letter-spacing:.1em;text-transform:uppercase;">当前段位</div>
+              <div style="font-size:20px;font-weight:900;color:var(--text);" id="hs-cur-rating">暂无数据</div>
+              <div style="font-size:11px;color:var(--muted);" id="hs-cur-desc">打一局看看你在哪个水平</div>
+            </div>
+          </div>
+          <div class="label" style="margin-bottom:9px;">历史记录</div>
+          <div class="hist-list" id="hist-list">
+            <div class="empty-state">暂无记录<br><span style="font-size:12px;">去打一局吧！🎮</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="hbar"><i></i></div>
+    </div>
+
+    <!-- ══════════════════════════════════
+         OVERLAY / MODAL
+    ══════════════════════════════════ -->
+    <div class="overlay" id="overlay">
+      <div class="ov-icon" id="ov-icon">✨</div>
+      <div class="ov-title" id="ov-title">标题</div>
+      <div class="ov-sub" id="ov-sub">副标题</div>
+      <div class="ov-btns" id="ov-btns"></div>
+    </div>
+
+    <div class="overlay" id="cd-overlay">
+      <div class="label" id="cd-label" style="font-size:13px;">游戏开始！</div>
+      <div class="cd-num" id="cd-num">3</div>
+    </div>
+
+  </div><!-- /screen-wrap -->
+</div><!-- /device -->
+
+<script>
+// ════════════════════════════════════
+//  DATA
+// ════════════════════════════════════
+const LEVELS = [
+  {name:'简单', pairs:6, time:90, grid:'g3'},
+  {name:'中等', pairs:8, time:70, grid:'g4'},
+  {name:'困难', pairs:10, time:60, grid:'g4'},
+];
+const EMOJI_SETS = [
+  ['🍎','🍊','🍋','🍇','🍓','🍒','🥝','🍑','🥭','🍍'],
+  ['🐶','🐱','🐰','🦊','🐻','🐼','🐨','🐯','🦁','🐸'],
+  ['⚽','🏀','🎾','🏈','⚾','🏐','🏉','🎱','🏓','🥊'],
+  ['🌸','🌺','🌻','🌹','🌷','🌼','🪷','🍀','🌿','🍁'],
+];
+const WORDS = [
+  {zh:'苹果',en:'Apple',cat:'食物'},{zh:'宇宙飞船',en:'Spaceship',cat:'科技'},
+  {zh:'彩虹',en:'Rainbow',cat:'自然'},{zh:'钢琴',en:'Piano',cat:'音乐'},
+  {zh:'恐龙',en:'Dinosaur',cat:'动物'},{zh:'时钟',en:'Clock',cat:'物品'},
+  {zh:'灯塔',en:'Lighthouse',cat:'建筑'},{zh:'气球',en:'Balloon',cat:'玩具'},
+  {zh:'眼镜',en:'Glasses',cat:'物品'},{zh:'雪人',en:'Snowman',cat:'自然'},
+  {zh:'蜡烛',en:'Candle',cat:'物品'},{zh:'地球仪',en:'Globe',cat:'地理'},
+  {zh:'蜜蜂',en:'Bee',cat:'动物'},{zh:'帆船',en:'Sailboat',cat:'交通'},
+  {zh:'魔法棒',en:'Magic Wand',cat:'魔幻'},{zh:'章鱼',en:'Octopus',cat:'动物'},
+  {zh:'蘑菇',en:'Mushroom',cat:'食物'},{zh:'沙漏',en:'Hourglass',cat:'物品'},
+  {zh:'热气球',en:'Hot Air Balloon',cat:'交通'},{zh:'螃蟹',en:'Crab',cat:'动物'},
+  {zh:'降落伞',en:'Parachute',cat:'运动'},{zh:'万花筒',en:'Kaleidoscope',cat:'玩具'},
+];
+
+// ════════════════════════════════════
+//  GLOBAL STATE
+// ════════════════════════════════════
+let G = {
+  mode: 'solo', // solo | pk | dg
+  level: 0,
+  pkDiff: 0,
+  // card game
+  cards: [], flipped: [], matched: 0, total: 0,
+  score: 0, miss: 0, combo: 0,
+  time: 60, maxTime: 60, timerInt: null,
+  locked: false, hinted: false, startTs: 0,
+  isPK: false,
+  p1: {name:'玩家1', pts:0, pairs:0},
+  p2: {name:'玩家2', pts:0, pairs:0},
+  turn: 1,
+  // draw & guess
+  dgWords: [], dgIdx: 0, dgFlashInt: null,
+  dgDistTime: 60, dgDistInt: null, dgDistScore: 0,
+  dgMGIdx: 0,
+  dgRecallQs: [], dgRecallIdx: 0, dgRecallScore: 0,
+};
+
+// ════════════════════════════════════
+//  NAVIGATION
+// ════════════════════════════════════
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function quitGame() {
+  showOverlay('⚠️','退出游戏','进度将丢失，确定退出吗？', [
+    {text:'继续游戏', cls:'btn-teal', fn: hideOverlay},
+    {text:'退出', cls:'btn-ghost', fn: () => { hideOverlay(); stopAll(); showPage('pg-home'); }},
+  ]);
+}
+
+function stopAll() {
+  clearInterval(G.timerInt);
+  clearInterval(G.dgFlashInt);
+  clearInterval(G.dgDistInt);
+}
+
+// ════════════════════════════════════
+//  OVERLAY / COUNTDOWN
+// ════════════════════════════════════
+function showOverlay(icon, title, sub, btns) {
+  document.getElementById('ov-icon').textContent = icon;
+  document.getElementById('ov-title').textContent = title;
+  document.getElementById('ov-sub').textContent = sub;
+  const bc = document.getElementById('ov-btns');
+  bc.innerHTML = '';
+  btns.forEach(b => {
+    const btn = document.createElement('button');
+    btn.className = 'btn ' + b.cls;
+    btn.textContent = b.text;
+    btn.onclick = b.fn;
+    bc.appendChild(btn);
+  });
+  document.getElementById('overlay').classList.add('show');
+}
+function hideOverlay() { document.getElementById('overlay').classList.remove('show'); }
+
+function countdown(label, cb) {
+  const ov = document.getElementById('cd-overlay');
+  const num = document.getElementById('cd-num');
+  document.getElementById('cd-label').textContent = label;
+  ov.classList.add('show');
+  let n = 3;
+  num.textContent = n;
+  const t = setInterval(() => {
+    n--;
+    if (n <= 0) { clearInterval(t); ov.classList.remove('show'); cb(); }
+    else num.textContent = n;
+  }, 1000);
+}
+
+// ════════════════════════════════════
+//  CARD GAME
+// ════════════════════════════════════
+function startSolo() {
+  G.mode = 'solo'; G.isPK = false; G.level = 0;
+  showPage('pg-game');
+  countdown('游戏开始！', () => initCardGame(false, 0));
+}
+
+let pkDiffSel = 0;
+function setDiff(d) {
+  pkDiffSel = d;
+  [0,1,2].forEach(i => document.getElementById('diff'+i).classList.toggle('on', i===d));
+}
+function startPK() {
+  G.p1.name = document.getElementById('p1name').value.trim() || '玩家1';
+  G.p2.name = document.getElementById('p2name').value.trim() || '玩家2';
+  G.mode = 'pk'; G.isPK = true;
+  showPage('pg-game');
+  countdown('对战开始！', () => initCardGame(true, pkDiffSel));
+}
+
+function initCardGame(isPK, level) {
+  stopAll();
+  const cfg = LEVELS[level];
+  G.isPK = isPK; G.level = level;
+  G.cards = []; G.flipped = []; G.matched = 0; G.total = cfg.pairs;
+  G.score = 0; G.miss = 0; G.combo = 0;
+  G.hinted = false; G.locked = false; G.startTs = Date.now();
+  G.maxTime = cfg.time; G.time = cfg.time;
+  G.p1.pts = 0; G.p1.pairs = 0;
+  G.p2.pts = 0; G.p2.pairs = 0;
+  G.turn = 1;
+
+  // UI visibility
+  document.getElementById('pk-board').style.display = isPK ? 'flex' : 'none';
+  document.getElementById('solo-stats').style.display = isPK ? 'none' : 'flex';
+  document.getElementById('timer-wrap').style.display = isPK ? 'none' : 'flex';
+  document.getElementById('hint-btn').style.display = isPK ? 'none' : 'block';
+  document.getElementById('hint-btn').textContent = '💡 提示';
+  document.getElementById('hint-btn').style.opacity = '1';
+  document.getElementById('mode-tag').textContent = isPK ? '⚔️ 对战模式' : '🃏 单人模式';
+
+  if (isPK) {
+    document.getElementById('pkn1').textContent = G.p1.name;
+    document.getElementById('pkn2').textContent = G.p2.name;
+    refreshPK();
+  } else {
+    refreshSolo();
+    startTimer();
+  }
+
+  buildGrid(cfg);
+  refreshProg();
+}
+
+function buildGrid(cfg) {
+  const grid = document.getElementById('card-grid');
+  grid.className = 'card-grid ' + cfg.grid;
+  const set = EMOJI_SETS[Math.floor(Math.random() * EMOJI_SETS.length)];
+  const emojis = shuffle(set).slice(0, cfg.pairs);
+  const deck = shuffle([...emojis, ...emojis]);
+  G.cards = deck.map((e, i) => ({emoji:e, flipped:false, matched:false}));
+  grid.innerHTML = '';
+  G.cards.forEach((c, i) => {
+    const el = document.createElement('div');
+    el.className = 'card';
+    el.innerHTML = '<div class="card-inner"><div class="cface cback"></div><div class="cface cfront">'+c.emoji+'</div></div>';
+    el.addEventListener('click', () => clickCard(i, el));
+    grid.appendChild(el);
+  });
+}
+
+function clickCard(i, el) {
+  if (G.locked || G.cards[i].flipped || G.cards[i].matched) return;
+  G.cards[i].flipped = true;
+  el.classList.add('flip');
+  G.flipped.push({i, el});
+
+  if (G.flipped.length === 2) {
+    G.locked = true;
+    const [a, b] = G.flipped;
+    if (G.cards[a.i].emoji === G.cards[b.i].emoji) {
+      // MATCH
+      setTimeout(() => {
+        const cls = G.isPK && G.turn === 1 ? 'done-red' : 'done';
+        a.el.classList.remove('flip'); a.el.classList.add(cls);
+        b.el.classList.remove('flip'); b.el.classList.add(cls);
+        G.cards[a.i].matched = true; G.cards[b.i].matched = true;
+        G.matched++;
+        if (G.isPK) {
+          if (G.turn === 1) { G.p1.pts += 20; G.p1.pairs++; }
+          else { G.p2.pts += 20; G.p2.pairs++; }
+          refreshPK();
+          flashTurn(G.turn===1?G.p1.name:G.p2.name, '配对成功！再翻一次 🎉', 'rgba(62,207,178,.95)');
+        } else {
+          G.combo++; G.score += Math.max(10, 30 - G.miss*2) + (G.combo>1 ? G.combo*5 : 0);
+          refreshSolo();
+        }
+        G.flipped = []; G.locked = false;
+        refreshProg();
+        if (G.matched === G.total) setTimeout(endGame, 400);
+      }, 300);
+    } else {
+      // MISS
+      setTimeout(() => {
+        a.el.classList.add('wrong'); b.el.classList.add('wrong');
+        setTimeout(() => {
+          a.el.classList.remove('flip','wrong'); b.el.classList.remove('flip','wrong');
+          G.cards[a.i].flipped = false; G.cards[b.i].flipped = false;
+          G.flipped = []; G.locked = false;
+          if (G.isPK) {
+            G.turn = G.turn === 1 ? 2 : 1;
+            refreshPK();
+            const next = G.turn===1 ? G.p1.name : G.p2.name;
+            flashTurn(next, '轮到你了！', 'var(--teal)');
+          } else {
+            G.combo = 0; G.miss++;
+            refreshSolo();
+          }
+        }, 380);
+      }, 500);
+    }
+  }
+}
+
+function flashTurn(name, msg, bg) {
+  const el = document.getElementById('turn-flash');
+  el.textContent = name + '：' + msg;
+  el.style.background = bg;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 1600);
+}
+
+function startTimer() {
+  clearInterval(G.timerInt);
+  refreshTimer();
+  G.timerInt = setInterval(() => {
+    G.time--;
+    refreshTimer();
+    if (G.time <= 0) { clearInterval(G.timerInt); endGame(true); }
+  }, 1000);
+}
+function refreshTimer() {
+  const pct = (G.time / G.maxTime) * 100;
+  const bar = document.getElementById('timer-bar');
+  bar.style.width = pct + '%';
+  bar.style.background = G.time <= 10 ? 'linear-gradient(90deg,var(--red),#e63946)' : 'linear-gradient(90deg,var(--teal),var(--blue))';
+  document.getElementById('timer-n').textContent = G.time;
+}
+function refreshSolo() {
+  document.getElementById('s-score').textContent = G.score;
+  document.getElementById('s-miss').textContent = G.miss;
+  document.getElementById('s-combo').textContent = G.combo > 1 ? G.combo+'x' : G.combo;
+}
+function refreshPK() {
+  document.getElementById('pkp1').textContent = G.p1.pts;
+  document.getElementById('pkp2').textContent = G.p2.pts;
+  const c1 = document.getElementById('pkcell1'), c2 = document.getElementById('pkcell2');
+  c1.className = 'pk-cell' + (G.turn===1 ? ' p1-turn' : '');
+  c2.className = 'pk-cell' + (G.turn===2 ? ' my-turn' : '');
+  document.getElementById('pki1').textContent = G.turn===1 ? '👆 翻牌中' : '';
+  document.getElementById('pki2').textContent = G.turn===2 ? '👆 翻牌中' : '';
+}
+function refreshProg() {
+  const pct = G.total > 0 ? (G.matched / G.total * 100) : 0;
+  document.getElementById('prog-fill').style.width = pct + '%';
+  document.getElementById('prog-txt').textContent = G.matched + '/' + G.total;
+}
+
+function endGame(timeout) {
+  clearInterval(G.timerInt);
+  if (G.isPK) {
+    const tied = G.p1.pairs === G.p2.pairs;
+    const w = G.p1.pairs >= G.p2.pairs ? G.p1 : G.p2;
+    const l = w === G.p1 ? G.p2 : G.p1;
+    showResults({type:'pk', icon: tied?'🤝':'🏆', title: tied?'平局！':'对战结束！',
+      sub: tied?'两人势均力敌！':w.name+'获胜！', w, l});
+  } else {
+    const elapsed = Math.round((Date.now()-G.startTs)/1000);
+    const final = G.score + (timeout ? 0 : G.time*2);
+    showResults({type:'solo',
+      icon: timeout?'⏰':G.miss===0?'🌟':'🏆',
+      title: timeout?'时间到！':G.miss===0?'完美！':'游戏结束！',
+      score: final, time: elapsed+'s', miss: G.miss, timeout: !!timeout});
+  }
+}
+
+function restartCurrent() {
+  stopAll();
+  countdown('再来一局！', () => initCardGame(G.isPK, G.level));
+}
+function useHint() {
+  if (G.hinted || G.locked) return;
+  G.hinted = true;
+  const btn = document.getElementById('hint-btn');
+  btn.textContent = '✓ 已用'; btn.style.opacity = '.4';
+  document.querySelectorAll('#card-grid .card:not(.done)').forEach(c => c.classList.add('flip'));
+  G.locked = true;
+  setTimeout(() => {
+    document.querySelectorAll('#card-grid .card:not(.done)').forEach(c => c.classList.remove('flip'));
+    G.locked = false; G.score = Math.max(0, G.score-30); refreshSolo();
+  }, 1000);
+}
+
+// ════════════════════════════════════
+//  DRAW & GUESS
+// ════════════════════════════════════
+function startDrawGuess() {
+  G.mode = 'dg';
+  G.dgWords = shuffle([...WORDS]).slice(0, 20);
+  G.dgIdx = 0; G.dgDistScore = 0; G.dgRecallScore = 0; G.dgMGIdx = 0;
+  G.dgRecallQs = []; G.dgRecallIdx = 0;
+  showPage('pg-dg');
+  setDGPhase(1);
+  buildFlashDots();
+  showOverlay('👀','准备好了！','接下来快速显示20个词语，每个3秒。\n尽量记住它们，可以用纸笔辅助！',[
+    {text:'开始记忆 →', cls:'btn-teal', fn: () => { hideOverlay(); runFlash(); }},
+  ]);
+}
+
+function setDGPhase(n) {
+  [1,2,3].forEach(i => {
+    const el = document.getElementById('dg'+i);
+    el.classList.toggle('active', i===n);
+  });
+}
+
+function buildFlashDots() {
+  const c = document.getElementById('flash-dots');
+  c.innerHTML = '';
+  for (let i = 0; i < 20; i++) {
+    const d = document.createElement('div');
+    d.className = 'fdot'; d.id = 'fd'+i; c.appendChild(d);
+  }
+}
+
+function runFlash() {
+  showFlashWord();
+}
+
+function showFlashWord() {
+  if (G.dgIdx >= G.dgWords.length) { startDistraction(); return; }
+  const w = G.dgWords[G.dgIdx];
+  document.getElementById('flash-counter').textContent = (G.dgIdx+1) + '/20';
+  document.getElementById('dg1-sub').textContent = '记住这个词！';
+  document.getElementById('flash-zh').textContent = w.zh;
+  document.getElementById('flash-en').textContent = w.en;
+  const cat = document.getElementById('flash-cat');
+  cat.textContent = w.cat; cat.style.display = '';
+
+  // Dots
+  for (let i = 0; i < 20; i++) {
+    const d = document.getElementById('fd'+i);
+    if (d) d.className = 'fdot' + (i < G.dgIdx ? ' seen' : i === G.dgIdx ? ' now' : '');
+  }
+
+  // Progress bar reset
+  const pf = document.getElementById('flash-pfill');
+  pf.style.transition = 'none'; pf.style.width = '100%';
+  setTimeout(() => { pf.style.transition = 'width 3s linear'; pf.style.width = '0%'; }, 30);
+
+  G.dgIdx++;
+  G.dgFlashInt = setTimeout(showFlashWord, 3000);
+}
+
+// ─── DISTRACTION ───
+const MINI_GAMES = [
+  {name:'数字顺序', init: initSeq},
+  {name:'颜色记忆', init: initColor},
+  {name:'快速心算', init: initMath},
+];
+let mgSeqAnswer=[], mgSeqInput=[], mgSeqState='';
+let mgColorTarget=[], mgColorState='';
+
+function startDistraction() {
+  clearInterval(G.dgFlashInt);
+  G.dgDistTime = 60; G.dgDistScore = 0; G.dgMGIdx = 0;
+  setDGPhase(2);
+  updateDistUI();
+  G.dgDistInt = setInterval(() => {
+    G.dgDistTime--;
+    updateDistUI();
+    if (G.dgDistTime <= 0) { clearInterval(G.dgDistInt); startRecall(); }
+  }, 1000);
+  loadMG(0);
+}
+function updateDistUI() {
+  document.getElementById('dist-timer').textContent = G.dgDistTime + 's';
+  document.getElementById('dist-score').textContent = G.dgDistScore;
+}
+function loadMG(idx) {
+  const mg = MINI_GAMES[idx % MINI_GAMES.length];
+  document.getElementById('mg-name').textContent = mg.name;
+  document.getElementById('dg2-title').textContent = mg.name;
+  document.getElementById('mg-content').innerHTML = '';
+  mg.init();
+}
+function nextMG() { G.dgMGIdx++; loadMG(G.dgMGIdx); }
+
+function initSeq() {
+  mgSeqAnswer = []; mgSeqInput = []; mgSeqState = 'showing';
+  const len = Math.min(4 + Math.floor(G.dgMGIdx/2), 7);
+  for (let i=0;i<len;i++) mgSeqAnswer.push(Math.floor(Math.random()*9)+1);
+  const c = document.getElementById('mg-content');
+  c.innerHTML = '<div class="seq-disp" id="sdsp"></div><div style="font-size:12px;color:var(--muted);text-align:center;margin:6px 0;" id="sinst">记住顺序...</div><div class="seq-btns" id="sbtns" style="display:none;"></div>';
+  const disp = document.getElementById('sdsp');
+  mgSeqAnswer.forEach(n => {
+    const el = document.createElement('div');
+    el.className = 'seq-n'; el.textContent = n; disp.appendChild(el);
+  });
+  setTimeout(() => {
+    disp.querySelectorAll('.seq-n').forEach(el => { el.textContent='?'; });
+    document.getElementById('sinst').textContent = '按顺序点击！';
+    const btns = document.getElementById('sbtns'); btns.style.display = 'flex';
+    const nums = [...new Set([...mgSeqAnswer, ...shuffle([1,2,3,4,5,6,7,8,9]).slice(0,3)])].slice(0,9);
+    shuffle(nums).forEach(n => {
+      const b = document.createElement('button');
+      b.className = 'seq-btn'; b.textContent = n;
+      b.onclick = () => {
+        if (mgSeqState !== 'input') return;
+        mgSeqInput.push(n);
+        const idx = mgSeqInput.length-1;
+        const ok = n === mgSeqAnswer[idx];
+        const ns = disp.querySelectorAll('.seq-n')[idx];
+        if (ns) { ns.textContent = n; ns.style.background = ok?'var(--teal)':'var(--red)'; ns.style.color = ok?'#000':'#fff'; }
+        if (!ok) { G.dgDistScore = Math.max(0, G.dgDistScore-5); setTimeout(nextMG, 500); return; }
+        if (mgSeqInput.length === mgSeqAnswer.length) {
+          G.dgDistScore += mgSeqAnswer.length*10; updateDistUI();
+          setTimeout(nextMG, 500);
+        }
+      };
+      btns.appendChild(b);
+    });
+    mgSeqState = 'input';
+  }, 2000);
+}
+
+function initColor() {
+  mgColorTarget = []; mgColorState = 'showing';
+  const size = Math.min(3+Math.floor(G.dgMGIdx/3), 4);
+  const total = size*size;
+  const COLS = ['#FF5F5F','#FFD166','#3ECFB2','#4DA6FF','#A78BFA','#FF9A3C'];
+  const litN = Math.min(3+Math.floor(G.dgMGIdx/2), 6);
+  const positions = shuffle([...Array(total).keys()]).slice(0, litN);
+  for (let i=0;i<total;i++) mgColorTarget.push(positions.includes(i) ? COLS[positions.indexOf(i)%COLS.length] : null);
+  const c = document.getElementById('mg-content');
+  c.innerHTML = '<div style="font-size:12px;color:var(--muted);text-align:center;margin-bottom:8px;" id="cinst">记住颜色位置！</div><div class="color-grid-mg" id="cgrid" style="grid-template-columns:repeat('+size+',1fr)"></div>';
+  const grid = document.getElementById('cgrid');
+  mgColorTarget.forEach((col,i) => {
+    const el = document.createElement('div');
+    el.className = 'color-cell';
+    el.style.background = col || 'var(--s3)';
+    grid.appendChild(el);
+  });
+  let remaining = positions.length;
+  setTimeout(() => {
+    grid.querySelectorAll('.color-cell').forEach(el => { el.style.background='var(--s3)'; });
+    document.getElementById('cinst').textContent = '点击有颜色的格子！';
+    mgColorState = 'input';
+    grid.querySelectorAll('.color-cell').forEach((el,i) => {
+      el.onclick = () => {
+        if (mgColorState !== 'input') return;
+        if (mgColorTarget[i]) {
+          el.style.background = mgColorTarget[i]; remaining--;
+          G.dgDistScore += 15; updateDistUI();
+          if (remaining <= 0) { mgColorState='done'; setTimeout(nextMG,400); }
+        } else {
+          el.style.background = 'var(--red)'; mgColorState='done';
+          G.dgDistScore = Math.max(0, G.dgDistScore-10);
+          setTimeout(nextMG, 500);
+        }
+      };
+    });
+  }, 2200);
+}
+
+function initMath() {
+  const ops=['+','-','×'], op=ops[Math.floor(Math.random()*3)];
+  let a,b,ans;
+  if(op==='+'){a=rand(10,50);b=rand(10,50);ans=a+b;}
+  else if(op==='-'){a=rand(30,80);b=rand(1,29);ans=a-b;}
+  else{a=rand(2,9);b=rand(2,9);ans=a*b;}
+  const w1=ans+rand(1,5)*(Math.random()>.5?1:-1);
+  const w2=ans+rand(6,15)*(Math.random()>.5?1:-1);
+  const opts=shuffle([ans,w1,w2]);
+  let done=false;
+  const c=document.getElementById('mg-content');
+  c.innerHTML=`<div class="math-q">${a} ${op} ${b} = ?</div><div class="math-opts">${opts.map(o=>`<button class="math-opt" onclick="mathPick(${o},${ans},this)">${o}</button>`).join('')}</div>`;
+}
+function mathPick(v,correct,btn) {
+  if(v===correct){btn.style.background='var(--teal)';btn.style.color='#000';G.dgDistScore+=25;updateDistUI();setTimeout(nextMG,400);}
+  else{btn.style.background='var(--red)';btn.style.color='#fff';G.dgDistScore=Math.max(0,G.dgDistScore-10);setTimeout(nextMG,500);}
+}
+function rand(a,b){return Math.floor(Math.random()*(b-a+1))+a;}
+
+// ─── RECALL ───
+function startRecall() {
+  clearInterval(G.dgDistInt);
+  const qs = shuffle([...G.dgWords]).slice(0,5);
+  G.dgRecallQs = qs.map((w,qi) => {
+    const type = qi%3;
+    if(type===0){
+      const pos=G.dgWords.indexOf(w)+1;
+      const wrongs=shuffle(G.dgWords.filter(x=>x!==w)).slice(0,3);
+      const opts=shuffle([w,...wrongs]);
+      return {q:`第 ${pos} 个词是？`, sub:'回忆第'+pos+'个词', opts:opts.map(o=>({txt:o.zh,ok:o===w}))};
+    } else if(type===1){
+      const pos=G.dgWords.indexOf(w)+1;
+      const wpos=shuffle([...Array(20).keys()].map(i=>i+1).filter(p=>p!==pos)).slice(0,3);
+      const opts=shuffle([{txt:'第'+pos+'个',ok:true},...wpos.map(p=>({txt:'第'+p+'个',ok:false}))]);
+      return {q:`"${w.zh}" 出现在第几个？`, sub:'回忆出现顺序', opts};
+    } else {
+      const cats=[...new Set(G.dgWords.map(x=>x.cat))];
+      const wcs=shuffle(cats.filter(c=>c!==w.cat)).slice(0,3);
+      const opts=shuffle([{txt:w.cat,ok:true},...wcs.map(c=>({txt:c,ok:false}))]);
+      return {q:`"${w.zh}" 属于什么类别？`, sub:'回忆词语分类', opts};
+    }
+  });
+  G.dgRecallIdx=0; G.dgRecallScore=0;
+  setDGPhase(3);
+  showRecallQ();
+}
+
+function showRecallQ() {
+  if(G.dgRecallIdx>=G.dgRecallQs.length){endDG();return;}
+  const q=G.dgRecallQs[G.dgRecallIdx];
+  document.getElementById('recall-qnum').textContent='第 '+(G.dgRecallIdx+1)+' 题 / 共 '+G.dgRecallQs.length+' 题';
+  document.getElementById('recall-qtxt').textContent=q.q;
+  document.getElementById('recall-qsub').textContent=q.sub;
+  document.getElementById('recall-prog').textContent=(G.dgRecallIdx+1)+'/'+G.dgRecallQs.length;
+  const oc=document.getElementById('recall-opts');
+  oc.innerHTML='';
+  q.opts.forEach(opt=>{
+    const btn=document.createElement('button');
+    btn.className='recall-opt'; btn.textContent=opt.txt;
+    btn.onclick=()=>{
+      oc.querySelectorAll('.recall-opt').forEach(b=>b.onclick=null);
+      if(opt.ok){btn.classList.add('ok');G.dgRecallScore+=100;}
+      else{btn.classList.add('no');oc.querySelectorAll('.recall-opt').forEach(b=>{if(b.textContent!==btn.textContent&&q.opts.find(o=>o.txt===b.textContent&&o.ok))b.classList.add('reveal');});}
+      document.getElementById('recall-score').textContent=G.dgRecallScore;
+      G.dgRecallIdx++;
+      setTimeout(showRecallQ,900);
+    };
+    oc.appendChild(btn);
+  });
+  document.getElementById('recall-score').textContent=G.dgRecallScore;
+}
+
+function endDG() {
+  const total=G.dgRecallQs.length*100;
+  const acc=Math.round((G.dgRecallScore/total)*100);
+  showResults({type:'solo',icon:acc>=80?'🧠':acc>=50?'😊':'💪',
+    title:acc>=80?'记忆力超强！':acc>=50?'不错！':'继续训练！',
+    sub:`记忆准确率 ${acc}%\n分心得分 ${G.dgDistScore}`,
+    score:G.dgRecallScore+G.dgDistScore, time:acc+'%', miss:(G.dgRecallQs.length-Math.round(G.dgRecallScore/100))+'题'});
+}
+
+// ════════════════════════════════════
+//  RESULTS
+// ════════════════════════════════════
+// ════════════════════════════════════
+//  RATING SYSTEM
+// ════════════════════════════════════
+const RATINGS = [
+  {min:0,  max:59,  key:'npc',   emoji:'🥴',title:'NPC',    cls:'r-npc',  desc:'连NPC都不如...系统怀疑你是随机点的',color:'rgba(200,200,200,.6)'},
+  {min:60, max:119, key:'la',    emoji:'💩',title:'拉',     cls:'r-la',   desc:'在平均线以下苦苦挣扎，要不要放弃？（是认真的）',color:'var(--red)'},
+  {min:120,max:169, key:'normal',emoji:'😐',title:'夯',     cls:'r-normal',desc:'普通人水平，芸芸众生中的一粒沙',color:'var(--blue)'},
+  {min:170,max:219, key:'hang',  emoji:'💪',title:'顶尖',   cls:'r-hang', desc:'超越了大多数普通人，还不错嘛',color:'var(--teal)'},
+  {min:220,max:269, key:'top',   emoji:'🧠',title:'人上人', cls:'r-top',  desc:'记忆力碾压95%的人，你妈喊你去高考',color:'var(--yellow)'},
+  {min:270,max:999, key:'god',   emoji:'👑',title:'人上人·神',cls:'r-god',desc:'这不正常，怀疑你开了外挂，或者你脑子有问题（好的那种）',color:'var(--purple)'},
+];
+const AVG_SCORE = 150;
+const MAX_SCORE = 300;
+
+const TAUNTS = {
+  npc:{
+    win:['恭喜你终于赢了，但赢得如此勉强，建议去看看脑科','这也叫赢？这分数你奶奶随机点都能比你高','系统记录到一个奇迹：你居然没放弃，虽然成绩一言难尽'],
+    lose:['意料之中，毕竟你连NPC都不如','这局直接帮你保存了，方便以后研究自己是怎么输的','不要伤心，不是每个人都需要记忆力的，比如鱼'],
+    timeout:['时间到了！你还在发呆？','60秒你翻了这么几对...金鱼表示羡慕','系统已自动忽略本局，假装没发生过']
+  },
+  la:{
+    win:['赢了，但低空飞过，再低一点就掉地上了','成绩比均线低这么多，你是来受苦的吗','建议回家多吃核桃，核桃补脑，这是有科学依据的'],
+    lose:['被时间追着跑还没跑过，这很说明问题','失败了，但我相信你已经尽力了——这才是最悲哀的部分','下次可以试试闭眼，说不定更好'],
+    timeout:['时间跑完了，你的牌还没翻完，效率感人','60秒你找到这几对？我家的狗都能做得更好','限时对你来说可能太残忍了，要不要试试无限时？']
+  },
+  normal:{
+    win:['普通人打法，中规中矩，毫无亮点，跟你一起玩的人可能有点无聊','成绩达到全国平均，可喜可贺，可喜可贺（打哈欠）','嗯，就这样，普通，不出错也不出彩，人生的写照'],
+    lose:['平均分都没到，让平均线都觉得有点尴尬','加把劲，你只差一点就能变成普通人了','差点就够着平均线了，就差那一点点，可惜'],
+    timeout:['来不及了，你的记忆力跑得比时钟慢','普通人级别的速度，但今天发挥失常了','别担心，普通人有时候也会更普通']
+  },
+  hang:{
+    win:['不错，超过了大多数普通人，但离真正厉害还差得远','上游水平，继续努力就能踏入顶尖行列——也许','赢了，还赢得挺体面的，给你20分'],
+    lose:['发挥失常？还是本来就这样？','以你的水平输掉这局，有点可惜，或者你只是假厉害','没关系，实力允许偶尔摆烂'],
+    timeout:['计时压力下翻车，平时应该不是这个水平吧？','还没到最顶尖，但已经很能打了，可惜今天时间不够用','时间比你快一点，下次一定']
+  },
+  top:{
+    win:['记忆力相当可以，碾压了95%的普通人，值得表扬','人上人档位！你妈一定很为你骄傲，她只是没说出来','这成绩正常人根本达不到，你确定你是人类？'],
+    lose:['好吧，就算高手也有失误的时候，勉强接受','以你的实力翻车，今天是不是没睡好？','人上人也有马失前蹄的时候，期待下局翻盘'],
+    timeout:['这么强的人被时间打败，有点意外，建议练速度','手速没跟上脑速，这是个技术问题','水平在线，但今天时间不站你这边']
+  },
+  god:{
+    win:['👑 神级发挥！怀疑你开了外挂，请自查','你的大脑已不属于人类范畴，请去参加世界记忆锦标赛','这成绩让开发者感到不安，你是不是看了源代码？'],
+    lose:['神级玩家居然输了？这是谦让还是系统bug了','不可能！除非你故意的！','就算是神也有陨落的时候，但是神，真的会输？'],
+    timeout:['神级记忆力，被时间打败了，速度是你的软肋','智慧超群，手速跟不上，建议报名打字速成班','大脑顶尖，手指拖后腿，不平衡啊']
+  }
+};
+
+function getRating(score){return RATINGS.find(r=>score>=r.min&&score<=r.max)||RATINGS[0];}
+function getTaunt(key,result){const pool=TAUNTS[key]?.[result]||TAUNTS.normal.win;return pool[Math.floor(Math.random()*pool.length)];}
+
+// ════════════════════════════════════
+//  HISTORY
+// ════════════════════════════════════
+function loadHistory(){try{return JSON.parse(localStorage.getItem('brain_history')||'[]');}catch(e){return[];}}
+function saveHistory(h){localStorage.setItem('brain_history',JSON.stringify(h.slice(-50)));}
+function addHistory(e){const h=loadHistory();h.push({...e,ts:Date.now()});saveHistory(h);}
+
+// ════════════════════════════════════
+//  RESULTS
+// ════════════════════════════════════
+let lastRes = null;
+function showResults(d) {
+  lastRes = d;
+  showPage('pg-results');
+  document.getElementById('res-icon').textContent = d.icon;
+  document.getElementById('res-title').textContent = d.title;
+
+  if (d.type === 'pk') {
+    document.getElementById('res-stats-solo').style.display = 'none';
+    document.getElementById('res-stats-pk').style.display = 'flex';
+    document.getElementById('score-meter-wrap').style.display = 'none';
+    document.getElementById('rating-badge').style.display = 'none';
+    const tied = d.w.pairs === d.l.pairs;
+    document.getElementById('pk-r1-name').textContent = d.w.name;
+    document.getElementById('pk-r1-pts').textContent = d.w.pts;
+    document.getElementById('pk-r1-tag').textContent = tied?'平局！':'胜利！';
+    document.getElementById('pk-row1').className = 'pk-res-row'+(tied?'':' win');
+    document.getElementById('pk-r2-name').textContent = d.l.name;
+    document.getElementById('pk-r2-pts').textContent = d.l.pts;
+    const pkTaunt = tied
+      ? ['两人记忆力半斤八两，一对废物','平局！系统不知道该嘲笑谁，于是嘲笑所有人','没有赢家，只有两个普通人'][Math.floor(Math.random()*3)]
+      : [d.w.name+'赢了，'+d.l.name+'，你的记忆力需要充值', d.l.name+'输了，不用难过，至少你参与了'][Math.floor(Math.random()*2)];
+    document.getElementById('taunt-txt').textContent = pkTaunt;
+    document.getElementById('taunt-box').style.display = '';
+  } else {
+    document.getElementById('res-stats-solo').style.display = 'flex';
+    document.getElementById('res-stats-pk').style.display = 'none';
+    document.getElementById('score-meter-wrap').style.display = '';
+    document.getElementById('rating-badge').style.display = '';
+    document.getElementById('taunt-box').style.display = '';
+    document.getElementById('rs-score').textContent = d.score;
+    document.getElementById('rs-time').textContent = d.time;
+    document.getElementById('rs-miss').textContent = d.miss;
+
+    const score = d.score;
+    const rating = getRating(score);
+    const result = d.timeout ? 'timeout' : score < AVG_SCORE ? 'lose' : 'win';
+
+    // Rating badge
+    document.getElementById('rating-badge').className = 'rating-badge ' + rating.cls;
+    document.getElementById('rating-emoji').textContent = rating.emoji;
+    document.getElementById('rating-title').textContent = rating.title;
+    document.getElementById('rating-desc').textContent = rating.desc;
+
+    // Score meter
+    const pct = Math.min(score/MAX_SCORE*100, 100);
+    const avgPct = Math.min(AVG_SCORE/MAX_SCORE*100, 100);
+    document.getElementById('meter-score-lbl').textContent = '得分 '+score;
+    document.getElementById('meter-max-lbl').textContent = MAX_SCORE;
+    document.getElementById('meter-fill').style.background = rating.color;
+    document.getElementById('meter-fill').style.width = '0%';
+    document.getElementById('meter-dot').style.left = '0%';
+    document.getElementById('meter-avg-line').style.left = avgPct+'%';
+    setTimeout(()=>{
+      document.getElementById('meter-fill').style.width = pct+'%';
+      document.getElementById('meter-dot').style.left = pct+'%';
+    }, 300);
+
+    // Taunt
+    document.getElementById('taunt-txt').textContent = getTaunt(rating.key, result);
+
+    // Save history
+    addHistory({score, rating:rating.key, ratingTitle:rating.title, ratingEmoji:rating.emoji, mode:G.mode, miss:d.miss, time:d.time});
+    const best = parseInt(localStorage.getItem('best')||'0');
+    if(score > best){localStorage.setItem('best',score);document.getElementById('my-best').textContent=score;}
+  }
+}
+
+function playAgain() {
+  if (!lastRes) return;
+  if (G.mode==='pk') showPage('pg-pksetup');
+  else if (G.mode==='dg') startDrawGuess();
+  else { showPage('pg-game'); countdown('再来一局！',()=>initCardGame(false,G.level)); }
+}
+
+// ════════════════════════════════════
+//  HISTORY PAGE
+// ════════════════════════════════════
+function switchTab(tab) {
+  if (tab==='home') {
+    showPage('pg-home');
+    document.getElementById('bntab-home').classList.add('on');
+    document.getElementById('bntab-hist').classList.remove('on');
+  } else {
+    showPage('pg-history');
+    document.getElementById('bntab-home').classList.remove('on');
+    document.getElementById('bntab-hist').classList.add('on');
+    renderHistory();
+  }
+}
+
+function renderHistory() {
+  const hist = loadHistory();
+  const listEl = document.getElementById('hist-list');
+  if (hist.length===0) {
+    listEl.innerHTML='<div class="empty-state">暂无记录<br><span style="font-size:12px;">去打一局吧！🎮</span></div>';
+    ['hs-best','hs-avg'].forEach(id=>document.getElementById(id).textContent='—');
+    document.getElementById('hs-games').textContent='0';
+    document.getElementById('hs-cur-rating').textContent='暂无数据';
+    document.getElementById('hs-cur-emoji').textContent='🤔';
+    document.getElementById('hs-cur-desc').textContent='打一局看看你在哪个水平';
+    drawChart([]);
+    return;
+  }
+  const scores = hist.map(h=>h.score);
+  const best = Math.max(...scores);
+  const avg = Math.round(scores.reduce((a,b)=>a+b,0)/scores.length);
+  document.getElementById('hs-best').textContent = best;
+  document.getElementById('hs-avg').textContent = avg;
+  document.getElementById('hs-games').textContent = hist.length;
+  const recentScores = scores.slice(-3);
+  const recentAvg = Math.round(recentScores.reduce((a,b)=>a+b,0)/recentScores.length);
+  const curR = getRating(recentAvg);
+  document.getElementById('hs-cur-emoji').textContent = curR.emoji;
+  document.getElementById('hs-cur-rating').textContent = curR.title;
+  document.getElementById('hs-cur-desc').textContent = '近'+recentScores.length+'局均分 '+recentAvg;
+  drawChart(scores.slice(-15));
+  const reversed = [...hist].reverse();
+  listEl.innerHTML='';
+  reversed.forEach((h,i)=>{
+    const prev = reversed[i+1];
+    const delta = prev ? h.score-prev.score : null;
+    const deltaStr = delta===null?'':delta>0?'↑ +'+delta:delta<0?'↓ '+delta:'→ 持平';
+    const deltaCls = delta===null?'':delta>0?'up':delta<0?'dn':'eq';
+    const r = getRating(h.score);
+    const modeLabel = {solo:'翻牌单人',pk:'翻牌对战',dg:'我画我猜'}[h.mode]||h.mode;
+    const date = new Date(h.ts);
+    const ds = (date.getMonth()+1)+'/'+date.getDate()+' '+String(date.getHours()).padStart(2,'0')+':'+String(date.getMinutes()).padStart(2,'0');
+    const el = document.createElement('div');
+    el.className='hist-item';
+    el.innerHTML=`<div class="hi-dot" style="background:rgba(255,255,255,.07);">${h.ratingEmoji||r.emoji}</div><div class="hi-info"><div class="hi-rating">${h.ratingTitle||r.title}</div><div class="hi-detail">${modeLabel} · ${ds}</div></div><div class="hi-right"><div class="hi-score">${h.score}</div>${delta!==null?`<div class="hi-delta ${deltaCls}">${deltaStr}</div>`:''}</div>`;
+    listEl.appendChild(el);
+  });
+}
+
+function drawChart(scores) {
+  const canvas = document.getElementById('hist-chart');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const W = canvas.offsetWidth||320, H=120;
+  canvas.width=W*window.devicePixelRatio; canvas.height=H*window.devicePixelRatio;
+  ctx.scale(window.devicePixelRatio,window.devicePixelRatio);
+  ctx.clearRect(0,0,W,H);
+  if(scores.length===0){
+    ctx.fillStyle='rgba(255,255,255,.2)';ctx.font='12px Nunito';ctx.textAlign='center';
+    ctx.fillText('暂无数据',W/2,H/2);return;
+  }
+  const pad={top:18,bottom:18,left:8,right:8};
+  const cW=W-pad.left-pad.right, cH=H-pad.top-pad.bottom;
+  function xp(i){return pad.left+(scores.length===1?cW/2:i/(scores.length-1)*cW);}
+  function yp(v){return pad.top+cH-(v/MAX_SCORE)*cH;}
+  // avg line
+  const ay=yp(AVG_SCORE);
+  ctx.strokeStyle='rgba(255,255,255,.18)';ctx.setLineDash([3,4]);ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(pad.left,ay);ctx.lineTo(W-pad.right,ay);ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle='rgba(255,255,255,.3)';ctx.font='9px DM Mono';ctx.textAlign='right';
+  ctx.fillText('均线'+AVG_SCORE,W-pad.right,ay-3);
+  // fill
+  const gr=ctx.createLinearGradient(0,pad.top,0,H);
+  gr.addColorStop(0,'rgba(62,207,178,.3)');gr.addColorStop(1,'rgba(62,207,178,0)');
+  ctx.fillStyle=gr;ctx.beginPath();
+  ctx.moveTo(xp(0),H);
+  scores.forEach((s,i)=>i===0?ctx.moveTo(xp(i),yp(s)):ctx.lineTo(xp(i),yp(s)));
+  ctx.lineTo(xp(scores.length-1),H);ctx.closePath();ctx.fill();
+  // line
+  ctx.strokeStyle='#3ECFB2';ctx.lineWidth=2.5;ctx.lineJoin='round';
+  ctx.beginPath();scores.forEach((s,i)=>i===0?ctx.moveTo(xp(i),yp(s)):ctx.lineTo(xp(i),yp(s)));ctx.stroke();
+  // dots
+  scores.forEach((s,i)=>{
+    const x=xp(i),y=yp(s),r=getRating(s);
+    ctx.fillStyle='#0A0A14';ctx.beginPath();ctx.arc(x,y,5,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle=r.color||'#3ECFB2';ctx.beginPath();ctx.arc(x,y,3.5,0,Math.PI*2);ctx.fill();
+    if(i===scores.length-1){ctx.fillStyle='#fff';ctx.font='bold 10px DM Mono';ctx.textAlign='center';ctx.fillText(s,x,y-8);}
+  });
+}
+
+// ════════════════════════════════════
+//  UTILS
+// ════════════════════════════════════
+function shuffle(a){const r=[...a];for(let i=r.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[r[i],r[j]]=[r[j],r[i]];}return r;}
+function updateClock(){const n=new Date();const t=String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0');document.querySelectorAll('#clock,#clock2,#clock3').forEach(el=>el&&(el.textContent=t));}
+updateClock();setInterval(updateClock,15000);
+const saved=localStorage.getItem('best');
+if(saved)document.getElementById('my-best').textContent=saved;
+if(window.innerWidth<=430){
+  document.querySelector('.device').style.cssText='width:100vw;height:100vh;border-radius:0;box-shadow:none;';
+  document.querySelector('.screen-wrap').style.borderRadius='0';
+  const di=document.querySelector('.di');if(di)di.style.display='none';
+  document.querySelectorAll('.overlay').forEach(el=>el.style.borderRadius='0');
+}
+</script>
+</body>
+</html>

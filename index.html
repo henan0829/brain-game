@@ -1,0 +1,2275 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>脑力对决</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Nunito:wght@400;700;800;900&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+:root{
+  --bg:#0A0A14; --s2:#1C1C2E; --s3:#252538;
+  --border:rgba(255,255,255,0.08);
+  --text:#fff; --muted:rgba(255,255,255,0.4);
+  --red:#FF5F5F; --teal:#3ECFB2; --yellow:#FFD166; --blue:#4DA6FF; --purple:#A78BFA;
+}
+html,body{width:100%;height:100%;background:#000;display:flex;align-items:center;justify-content:center;font-family:'Nunito',sans-serif;overflow:hidden;}
+
+/* DEVICE FRAME */
+.device{position:relative;width:390px;height:844px;background:#111;border-radius:52px;
+  box-shadow:0 0 0 1.5px #2a2a2a,0 0 0 3.5px #111,0 60px 140px rgba(0,0,0,.9),inset 0 0 0 1px rgba(255,255,255,.05);
+  overflow:hidden;flex-shrink:0;}
+.device::before{content:'';position:absolute;left:-3px;top:110px;width:3px;height:30px;background:#222;border-radius:3px 0 0 3px;box-shadow:0 44px 0 #222,0 80px 0 #222;}
+.device::after{content:'';position:absolute;right:-3px;top:150px;width:3px;height:62px;background:#222;border-radius:0 3px 3px 0;}
+
+/* SCREEN */
+.screen-wrap{position:absolute;inset:0;background:var(--bg);border-radius:52px;overflow:hidden;display:flex;flex-direction:column;}
+
+/* Dynamic Island */
+.di{position:absolute;top:12px;left:50%;transform:translateX(-50%);width:118px;height:34px;background:#000;border-radius:17px;z-index:999;pointer-events:none;}
+.di::after{content:'';position:absolute;right:11px;top:50%;transform:translateY(-50%);width:10px;height:10px;background:#1a1a2e;border-radius:50%;border:1px solid #333;box-shadow:inset 0 0 0 3px rgba(0,80,255,.5);}
+
+/* STATUS BAR */
+.status-bar{height:54px;display:flex;align-items:flex-end;justify-content:space-between;padding:0 24px 8px;flex-shrink:0;}
+.sb-time{font-family:'DM Mono',monospace;font-size:15px;font-weight:500;color:var(--text);}
+.sb-icons{display:flex;gap:5px;align-items:center;}
+
+/* SCREENS — use display:none / display:flex */
+.page{display:none;flex-direction:column;flex:1;min-height:0;overflow:hidden;}
+.page.active{display:flex;}
+
+/* Scrollable content inside page */
+.scroll{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;padding-bottom:8px;}
+.scroll::-webkit-scrollbar{display:none;}
+
+/* HOME BAR */
+.hbar{height:26px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.hbar i{display:block;width:130px;height:5px;background:rgba(255,255,255,.18);border-radius:99px;}
+
+/* ── TYPOGRAPHY & LAYOUT ── */
+.px{padding-left:22px;padding-right:22px;}
+.label{font-size:11px;letter-spacing:.16em;text-transform:uppercase;font-weight:700;color:var(--muted);}
+.title{font-size:30px;font-weight:900;line-height:1.1;color:var(--text);}
+.sub{font-size:14px;color:var(--muted);line-height:1.55;font-weight:600;}
+
+/* ── BUTTONS ── */
+.btn{display:block;width:100%;height:56px;border:none;border-radius:16px;font-size:16px;font-weight:800;font-family:'Nunito',sans-serif;cursor:pointer;transition:transform .12s,opacity .1s;}
+.btn:active{transform:scale(.96);opacity:.85;}
+.btn-teal{background:linear-gradient(135deg,var(--teal),#2ab8a0);color:#000;box-shadow:0 4px 20px rgba(62,207,178,.3);}
+.btn-red{background:linear-gradient(135deg,var(--red),#e63946);color:#fff;box-shadow:0 4px 20px rgba(255,95,95,.3);}
+.btn-yellow{background:linear-gradient(135deg,var(--yellow),#f4a261);color:#000;box-shadow:0 4px 20px rgba(255,209,102,.25);}
+.btn-ghost{background:var(--s2);color:var(--muted);box-shadow:none;}
+.btn-sm{height:44px;font-size:14px;border-radius:12px;}
+
+.back-btn{display:flex;align-items:center;gap:6px;background:none;border:none;color:var(--muted);font-size:14px;font-weight:700;font-family:'Nunito',sans-serif;cursor:pointer;padding:0;}
+.back-btn:active{color:var(--text);}
+
+/* ── CARDS ── */
+.card-block{background:var(--s2);border-radius:22px;border:1px solid var(--border);padding:18px;}
+
+/* ── HOME ── */
+.home-hero{padding:54px 22px 18px;}
+.mode-grid{display:flex;flex-direction:column;gap:11px;padding:0 18px 18px;}
+.mode-item{background:var(--s2);border-radius:22px;padding:18px 18px 14px;border:1px solid var(--border);cursor:pointer;transition:transform .12s,opacity .1s;}
+.mode-item:active{transform:scale(.97);opacity:.9;}
+.mode-item.m-teal{border-color:rgba(62,207,178,.22);}
+.mode-item.m-red{border-color:rgba(255,95,95,.22);}
+.mode-item.m-yellow{border-color:rgba(255,209,102,.22);}
+.mi-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+.mi-icon{font-size:34px;}
+.mi-badge{font-size:10px;font-weight:800;padding:4px 10px;border-radius:99px;letter-spacing:.05em;}
+.bg-teal{background:rgba(62,207,178,.15);color:var(--teal);}
+.bg-red{background:rgba(255,95,95,.15);color:var(--red);}
+.bg-yellow{background:rgba(255,209,102,.15);color:var(--yellow);}
+.mi-title{font-size:19px;font-weight:900;color:var(--text);margin-bottom:3px;}
+.mi-desc{font-size:13px;color:var(--muted);line-height:1.45;}
+.mi-tags{display:flex;gap:6px;margin-top:11px;flex-wrap:wrap;}
+.tag{font-size:11px;font-weight:700;padding:3px 9px;background:rgba(255,255,255,.06);border-radius:99px;color:var(--muted);}
+
+/* ── SETUP ── */
+.setup-body{flex:1;display:flex;flex-direction:column;gap:14px;padding:12px 22px 22px;overflow-y:auto;}
+.setup-body::-webkit-scrollbar{display:none;}
+.input-field{width:100%;background:var(--s3);border:1.5px solid var(--border);border-radius:12px;padding:13px 16px;font-size:16px;font-weight:700;font-family:'Nunito',sans-serif;color:var(--text);outline:none;}
+.input-field:focus{border-color:rgba(255,255,255,.3);}
+.input-field::placeholder{color:var(--muted);}
+.diff-row{display:flex;gap:7px;}
+.diff-opt{flex:1;height:42px;border:1.5px solid var(--border);border-radius:11px;background:transparent;color:var(--muted);font-size:13px;font-weight:800;font-family:'Nunito',sans-serif;cursor:pointer;transition:all .15s;}
+.diff-opt.on{border-color:var(--teal);color:var(--teal);background:rgba(62,207,178,.1);}
+.diff-opt:active{transform:scale(.96);}
+
+/* ── CARD GAME ── */
+.cg-body{flex:1;display:flex;flex-direction:column;padding:8px 14px 10px;min-height:0;}
+
+/* PK scoreboard */
+.pk-board{display:flex;gap:8px;margin-bottom:8px;}
+.pk-cell{flex:1;background:var(--s2);border-radius:16px;padding:10px 12px;border:3px solid transparent;transition:all .25s cubic-bezier(.4,0,.2,1);opacity:.45;transform:scale(.97);}
+.pk-cell.my-turn{border-color:var(--teal);background:rgba(62,207,178,.12);opacity:1;transform:scale(1);box-shadow:0 0 0 1px rgba(62,207,178,.3),0 4px 20px rgba(62,207,178,.25);}
+.pk-cell.p1-turn{border-color:var(--red);background:rgba(255,95,95,.12);opacity:1;transform:scale(1);box-shadow:0 0 0 1px rgba(255,95,95,.3),0 4px 20px rgba(255,95,95,.25);}
+.pk-name{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;}
+.pk-pts{font-size:26px;font-weight:900;font-family:'DM Mono',monospace;color:var(--text);}
+.pk-indicator{font-size:11px;font-weight:900;min-height:16px;margin-top:2px;}
+/* turn overlay banner - big & unmissable */
+.turn-overlay{position:absolute;left:0;right:0;bottom:90px;display:flex;justify-content:center;z-index:60;pointer-events:none;transition:opacity .3s;}
+.turn-overlay-pill{padding:10px 24px;border-radius:99px;font-size:16px;font-weight:900;color:#000;display:flex;align-items:center;gap:8px;box-shadow:0 4px 24px rgba(0,0,0,.4);animation:pillPop .3s cubic-bezier(.34,1.56,.64,1);}
+@keyframes pillPop{0%{transform:scale(.7) translateY(10px);opacity:0;}100%{transform:scale(1) translateY(0);opacity:1;}}
+
+/* Solo stats */
+.stat-row{display:flex;gap:8px;margin-bottom:10px;}
+.stat-box{flex:1;background:var(--s2);border-radius:12px;padding:8px 10px;}
+.stat-lbl{font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:700;}
+.stat-val{font-size:22px;font-weight:900;font-family:'DM Mono',monospace;color:var(--text);}
+.c-red{color:var(--red);}
+.c-teal{color:var(--teal);}
+
+/* Timer */
+.timer-wrap{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
+.timer-track{flex:1;height:5px;background:var(--s3);border-radius:99px;overflow:hidden;}
+.timer-bar{height:100%;background:linear-gradient(90deg,var(--teal),var(--blue));border-radius:99px;transition:width 1s linear,background .3s;}
+.timer-n{font-size:13px;font-weight:800;font-family:'DM Mono',monospace;color:var(--text);width:30px;text-align:right;}
+
+/* Progress */
+.prog-wrap{margin-bottom:10px;}
+.prog-lbl{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);font-family:'DM Mono',monospace;margin-bottom:5px;}
+.prog-track{height:5px;background:var(--s3);border-radius:99px;overflow:hidden;}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--teal),var(--red));border-radius:99px;transition:width .4s;}
+
+/* Card grid */
+.card-grid{display:grid;gap:8px;flex:1;align-content:center;}
+.g3{grid-template-columns:repeat(3,1fr);}
+.g4{grid-template-columns:repeat(4,1fr);}
+
+.card{aspect-ratio:1;perspective:700px;cursor:pointer;user-select:none;}
+.card-inner{width:100%;height:100%;position:relative;transform-style:preserve-3d;transition:transform .3s cubic-bezier(.4,0,.2,1);border-radius:14px;}
+.card.flip .card-inner,.card.done .card-inner,.card.done-red .card-inner{transform:rotateY(180deg);}
+.cface{position:absolute;inset:0;border-radius:14px;display:flex;align-items:center;justify-content:center;backface-visibility:hidden;-webkit-backface-visibility:hidden;}
+.cback{background:var(--s2);border:1px solid rgba(255,255,255,.07);}
+.cback::after{content:'✦';font-size:15px;color:rgba(255,255,255,.12);}
+.cfront{background:var(--s3);transform:rotateY(180deg);border:1px solid rgba(255,255,255,.07);font-size:clamp(16px,6.5vw,30px);}
+.card.done .cfront{background:rgba(62,207,178,.15);border-color:var(--teal);}
+.card.done-red .cfront{background:rgba(255,95,95,.15);border-color:var(--red);}
+.card.wrong .card-inner{animation:shake .28s ease;}
+@keyframes shake{0%,100%{transform:rotateY(180deg) translateX(0);}30%{transform:rotateY(180deg) translateX(-5px);}70%{transform:rotateY(180deg) translateX(5px);}}
+
+/* CG footer */
+.cg-footer{display:flex;gap:8px;padding:8px 14px 8px;flex-shrink:0;}
+.cg-footer .btn{height:48px;font-size:14px;flex:1;}
+
+/* Turn flash banner */
+.turn-flash{position:absolute;top:0;left:0;right:0;background:var(--teal);color:#000;text-align:center;padding:9px;font-size:14px;font-weight:900;transform:translateY(-100%);transition:transform .25s;z-index:50;border-radius:0 0 16px 16px;}
+.turn-flash.show{transform:translateY(0);}
+
+/* ── DRAW & GUESS ── */
+.dg-phase{display:none;flex-direction:column;flex:1;min-height:0;}
+.dg-phase.active{display:flex;}
+
+/* Flash phase */
+.flash-content{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:0 20px;}
+.flash-card{width:100%;background:var(--s2);border-radius:22px;padding:28px 20px;text-align:center;border:1px solid var(--border);min-height:120px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;}
+.flash-zh{font-size:40px;font-weight:900;color:var(--text);}
+.flash-en{font-size:14px;color:var(--muted);font-weight:600;}
+.flash-cat{font-size:10px;font-weight:700;padding:3px 10px;border-radius:99px;background:rgba(62,207,178,.15);color:var(--teal);margin-top:4px;}
+.flash-prog-bar{width:100%;height:5px;background:var(--s3);border-radius:99px;overflow:hidden;}
+.flash-prog-fill{height:100%;background:linear-gradient(90deg,var(--teal),var(--blue));border-radius:99px;transition:width 3s linear;}
+.flash-dots{display:flex;gap:4px;flex-wrap:wrap;justify-content:center;max-width:260px;}
+.fdot{width:8px;height:8px;border-radius:50%;background:var(--s3);}
+.fdot.seen{background:var(--teal);}
+.fdot.now{background:var(--yellow);transform:scale(1.3);}
+
+/* Distraction phase */
+.dist-content{flex:1;display:flex;flex-direction:column;gap:10px;padding:0 18px 18px;overflow-y:auto;}
+.dist-content::-webkit-scrollbar{display:none;}
+.mg-card{background:var(--s2);border-radius:18px;padding:16px;border:1px solid var(--border);}
+.mg-title{font-size:15px;font-weight:900;color:var(--text);margin-bottom:6px;}
+#mg-content{margin-top:10px;}
+
+/* Mini game elements */
+.seq-disp{display:flex;gap:7px;justify-content:center;flex-wrap:wrap;min-height:52px;align-items:center;}
+.seq-n{width:42px;height:42px;background:var(--s3);border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:900;font-family:'DM Mono',monospace;color:var(--text);transition:background .2s,color .2s;}
+.seq-n.lit{background:var(--yellow);color:#000;}
+.seq-btns{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin-top:8px;}
+.seq-btn{width:42px;height:42px;background:var(--s3);border:1px solid var(--border);border-radius:11px;font-size:16px;font-weight:900;font-family:'DM Mono',monospace;color:var(--text);cursor:pointer;transition:transform .1s;}
+.seq-btn:active{transform:scale(.88);}
+.color-grid-mg{display:grid;gap:7px;}
+.color-cell{aspect-ratio:1;border-radius:11px;cursor:pointer;border:1px solid var(--border);transition:transform .15s;}
+.color-cell:active{transform:scale(.9);}
+.math-q{font-size:34px;font-weight:900;font-family:'DM Mono',monospace;color:var(--text);text-align:center;margin:8px 0;}
+.math-opts{display:flex;gap:8px;}
+.math-opt{flex:1;height:50px;border:1.5px solid var(--border);border-radius:13px;font-size:20px;font-weight:900;font-family:'DM Mono',monospace;background:var(--s3);color:var(--text);cursor:pointer;transition:background .15s;}
+.math-opt:active{opacity:.7;}
+
+/* Recall phase */
+.recall-content{flex:1;display:flex;flex-direction:column;gap:12px;padding:0 18px 18px;overflow-y:auto;}
+.recall-content::-webkit-scrollbar{display:none;}
+.recall-q-card{background:var(--s2);border-radius:18px;padding:18px;border:1px solid var(--border);}
+.recall-blank-row{display:flex;gap:8px;align-items:center;}
+.recall-input{flex:1;background:var(--s3);border:2px solid var(--border);border-radius:12px;padding:12px 14px;font-size:18px;font-weight:800;font-family:'Nunito',sans-serif;color:var(--text);outline:none;transition:border-color .2s;}
+.recall-input:focus{border-color:rgba(255,255,255,.3);}
+.recall-input.ok{border-color:var(--teal);background:rgba(62,207,178,.1);}
+.recall-input.no{border-color:var(--red);background:rgba(255,95,95,.08);}
+.recall-submit{height:48px;padding:0 20px;border:none;border-radius:12px;background:linear-gradient(135deg,var(--teal),#2ab8a0);color:#000;font-size:15px;font-weight:900;font-family:'Nunito',sans-serif;cursor:pointer;white-space:nowrap;transition:transform .1s;}
+.recall-submit:active{transform:scale(.94);}
+.recall-answer-reveal{font-size:14px;color:var(--teal);font-weight:700;margin-top:6px;min-height:18px;}
+.recall-answer-wrong{font-size:14px;color:var(--red);font-weight:700;margin-top:6px;}
+
+/* ── RESULTS ── */
+.results-body{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:16px 22px 22px;overflow-y:auto;}
+.results-body::-webkit-scrollbar{display:none;}
+.res-icon{font-size:70px;animation:popIn .45s cubic-bezier(.34,1.56,.64,1);}
+@keyframes popIn{0%{transform:scale(0) rotate(-8deg);opacity:0;}100%{transform:scale(1) rotate(0);opacity:1;}}
+.res-title{font-size:34px;font-weight:900;color:var(--text);text-align:center;}
+.res-sub{font-size:14px;color:var(--muted);text-align:center;line-height:1.6;white-space:pre-line;}
+.res-stats{display:flex;gap:8px;width:100%;}
+.res-stat{flex:1;background:var(--s2);border-radius:16px;padding:14px 8px;text-align:center;border:1px solid var(--border);}
+.rs-val{font-size:26px;font-weight:900;font-family:'DM Mono',monospace;color:var(--text);}
+.rs-lab{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;font-weight:700;margin-top:3px;}
+.pk-res-wrap{width:100%;display:flex;flex-direction:column;gap:8px;}
+.pk-res-row{background:var(--s2);border-radius:16px;padding:14px 16px;display:flex;align-items:center;gap:12px;border:2px solid transparent;}
+.pk-res-row.win{border-color:var(--yellow);background:rgba(255,209,102,.07);}
+.pra-name{flex:1;font-size:16px;font-weight:900;color:var(--text);}
+.pra-pts{font-size:26px;font-weight:900;font-family:'DM Mono',monospace;color:var(--text);}
+.win-tag{font-size:11px;font-weight:700;padding:3px 9px;border-radius:99px;background:rgba(255,209,102,.2);color:var(--yellow);display:inline-block;margin-top:2px;}
+.lose-tag{font-size:11px;font-weight:700;padding:3px 9px;border-radius:99px;background:rgba(255,255,255,.06);color:var(--muted);display:inline-block;margin-top:2px;}
+.res-btns{display:flex;flex-direction:column;gap:8px;width:100%;}
+
+/* ── OVERLAY / MODAL ── */
+.overlay{position:absolute;inset:0;background:rgba(10,10,20,.93);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);display:none;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:32px 28px;z-index:500;border-radius:52px;}
+.overlay.show{display:flex;}
+.ov-icon{font-size:64px;animation:popIn .4s cubic-bezier(.34,1.56,.64,1);}
+.ov-title{font-size:28px;font-weight:900;color:var(--text);text-align:center;line-height:1.15;}
+.ov-sub{font-size:14px;color:var(--muted);text-align:center;line-height:1.65;max-width:280px;}
+.ov-btns{display:flex;flex-direction:column;gap:9px;width:100%;}
+.cd-num{font-size:110px;font-weight:900;font-family:'DM Mono',monospace;color:var(--text);animation:pulse 1s ease infinite;}
+@keyframes pulse{0%,100%{transform:scale(1);}50%{transform:scale(1.06);}}
+
+/* LEADERBOARD */
+.lb-wrap{margin:0 18px 18px;background:var(--s2);border-radius:18px;padding:14px 16px;border:1px solid var(--border);}
+.lb-row{display:flex;align-items:center;gap:10px;padding:5px 0;}
+.lb-rank{width:20px;font-size:12px;font-weight:800;font-family:'DM Mono',monospace;color:var(--muted);}
+.lb-rank.g{color:var(--yellow);}
+.lb-rank.s{color:#C0C0C0;}
+.lb-rank.b{color:#CD7F32;}
+.lb-name{flex:1;font-size:13px;font-weight:700;color:var(--text);}
+.lb-score{font-size:13px;font-weight:800;font-family:'DM Mono',monospace;color:var(--teal);}
+
+/* ── RATING BADGE ── */
+.rating-badge{display:flex;flex-direction:column;align-items:center;gap:6px;background:var(--s2);border-radius:22px;padding:18px 16px;border:2px solid transparent;width:100%;}
+.rating-badge.r-npc{border-color:rgba(255,255,255,.12);}
+.rating-badge.r-la{border-color:rgba(255,95,95,.4);background:rgba(255,95,95,.06);}
+.rating-badge.r-normal{border-color:rgba(77,166,255,.35);background:rgba(77,166,255,.06);}
+.rating-badge.r-hang{border-color:rgba(62,207,178,.4);background:rgba(62,207,178,.07);}
+.rating-badge.r-top{border-color:rgba(255,209,102,.45);background:rgba(255,209,102,.07);}
+.rating-badge.r-god{border-color:rgba(167,139,250,.5);background:linear-gradient(135deg,rgba(167,139,250,.1),rgba(255,209,102,.06));}
+.rating-emoji{font-size:48px;line-height:1;animation:popIn .45s cubic-bezier(.34,1.56,.64,1);}
+.rating-title{font-size:26px;font-weight:900;color:var(--text);}
+.rating-desc{font-size:12px;color:var(--muted);text-align:center;line-height:1.5;max-width:240px;}
+
+/* score meter */
+.score-meter{width:100%;display:flex;flex-direction:column;gap:7px;}
+.meter-labels{display:flex;justify-content:space-between;font-size:10px;font-family:'DM Mono',monospace;color:var(--muted);}
+.meter-track{height:10px;background:var(--s3);border-radius:99px;overflow:visible;position:relative;margin:4px 0;}
+.meter-fill{height:100%;border-radius:99px;transition:width 1.2s cubic-bezier(.4,0,.2,1);}
+.meter-avg-line{position:absolute;top:-5px;bottom:-5px;width:2px;background:rgba(255,255,255,.25);border-radius:2px;z-index:2;}
+.meter-avg-lbl{position:absolute;top:-18px;font-size:9px;color:rgba(255,255,255,.35);font-weight:700;transform:translateX(-50%);white-space:nowrap;}
+.meter-dot{position:absolute;top:50%;width:16px;height:16px;background:#fff;border-radius:50%;transform:translate(-50%,-50%);box-shadow:0 0 0 3px var(--bg),0 2px 8px rgba(0,0,0,.5);transition:left 1.2s cubic-bezier(.4,0,.2,1);z-index:3;}
+
+/* taunt */
+.taunt-box{background:rgba(255,95,95,.07);border:1px solid rgba(255,95,95,.2);border-radius:16px;padding:14px 16px;width:100%;}
+.taunt-lbl{font-size:10px;font-weight:700;color:var(--red);letter-spacing:.1em;text-transform:uppercase;margin-bottom:5px;}
+.taunt-txt{font-size:14px;color:var(--text);line-height:1.55;font-weight:600;}
+
+/* ── HISTORY PAGE ── */
+.hist-header{padding:54px 22px 12px;}
+.chart-wrap{background:var(--s2);border-radius:20px;padding:16px;border:1px solid var(--border);margin-bottom:12px;}
+.chart-title{font-size:13px;font-weight:900;color:var(--text);margin-bottom:2px;}
+.chart-sub{font-size:11px;color:var(--muted);margin-bottom:12px;}
+.chart-area{position:relative;width:100%;height:120px;}
+canvas#hist-chart{display:block;width:100%!important;height:120px!important;}
+
+.hist-stats-row{display:flex;gap:8px;margin-bottom:12px;}
+.hs-card{flex:1;background:var(--s2);border-radius:14px;padding:11px;text-align:center;border:1px solid var(--border);}
+.hs-val{font-size:21px;font-weight:900;font-family:'DM Mono',monospace;color:var(--text);}
+.hs-lab{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;font-weight:700;margin-top:2px;}
+
+.hist-list{display:flex;flex-direction:column;gap:7px;}
+.hist-item{background:var(--s2);border-radius:14px;padding:11px 14px;border:1px solid var(--border);display:flex;align-items:center;gap:10px;}
+.hi-dot{width:36px;height:36px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+.hi-info{flex:1;min-width:0;}
+.hi-rating{font-size:13px;font-weight:900;color:var(--text);}
+.hi-detail{font-size:11px;color:var(--muted);margin-top:1px;}
+.hi-right{text-align:right;}
+.hi-score{font-size:20px;font-weight:900;font-family:'DM Mono',monospace;color:var(--text);}
+.hi-delta{font-size:11px;font-weight:700;margin-top:1px;}
+.hi-delta.up{color:var(--teal);}
+.hi-delta.dn{color:var(--red);}
+.hi-delta.eq{color:var(--muted);}
+.empty-state{text-align:center;padding:40px 20px;color:var(--muted);font-size:14px;line-height:1.7;}
+
+/* Level select */
+.lv-item{background:var(--s2);border-radius:16px;padding:13px 14px;border:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;cursor:pointer;transition:transform .12s,opacity .12s;margin-bottom:8px;}
+.lv-item:active{transform:scale(.97);}
+.lv-locked{opacity:.4;cursor:default;}
+.lv-left{display:flex;align-items:center;gap:12px;}
+.lv-num{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:900;flex-shrink:0;}
+.lv-name{font-size:14px;font-weight:900;color:var(--text);display:flex;align-items:center;gap:6px;}
+.lv-badge{font-size:9px;font-weight:800;padding:2px 7px;border-radius:99px;letter-spacing:.05em;}
+.lv-desc{font-size:11px;color:var(--muted);margin-top:2px;}
+.lv-right{display:flex;flex-direction:column;align-items:flex-end;gap:2px;}
+.lv-best{font-size:16px;font-weight:900;font-family:'DM Mono',monospace;color:var(--teal);}
+.lv-best-lab{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;font-weight:700;}
+.lv-arrow{font-size:12px;color:var(--muted);margin-top:2px;}
+
+/* DG Setup / Theme Select */
+.theme-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;}
+.theme-chip{background:var(--s2);border:2px solid var(--border);border-radius:16px;padding:14px 10px;text-align:center;cursor:pointer;transition:all .15s;user-select:none;}
+.theme-chip:active{transform:scale(.94);}
+.theme-chip.selected{border-color:var(--yellow);background:rgba(255,209,102,.1);}
+.theme-chip .tc-icon{font-size:28px;display:block;margin-bottom:5px;}
+.theme-chip .tc-name{font-size:13px;font-weight:800;color:var(--text);}
+.theme-chip .tc-desc{font-size:10px;color:var(--muted);margin-top:2px;}
+/* Loading screen */
+.loading-wrap{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:32px;}
+.loading-spinner{width:48px;height:48px;border:3px solid var(--s3);border-top-color:var(--yellow);border-radius:50%;animation:spin .8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.loading-words{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;max-width:280px;min-height:80px;}
+.lw-tag{font-size:12px;font-weight:700;padding:4px 10px;border-radius:99px;background:rgba(255,209,102,.12);color:var(--yellow);border:1px solid rgba(255,209,102,.2);animation:fadeIn .3s ease;}
+@keyframes fadeIn{from{opacity:0;transform:scale(.8);}to{opacity:1;transform:scale(1);}}
+
+/* Language switcher */
+.lang-bar{display:flex;gap:6px;padding:8px 22px 0;}
+.lang-btn{flex:1;height:34px;border:1.5px solid var(--border);border-radius:10px;background:transparent;font-size:13px;font-weight:800;font-family:"Nunito",sans-serif;color:var(--muted);cursor:pointer;transition:all .15s;}
+.lang-btn.on{background:var(--s2);border-color:rgba(255,255,255,.2);color:var(--text);}
+.lang-btn:active{transform:scale(.94);}
+
+/* bottom nav */
+.bnav{display:flex;padding:6px 14px 0;gap:6px;flex-shrink:0;border-top:1px solid var(--border);}
+.bntab{flex:1;height:42px;border:none;background:transparent;font-size:12px;font-weight:800;font-family:'Nunito',sans-serif;color:var(--muted);cursor:pointer;border-radius:10px;transition:all .15s;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;}
+.bntab span{font-size:18px;line-height:1;}
+.bntab.on{background:var(--s2);color:var(--teal);}
+.bntab:active{transform:scale(.93);}
+
+/* RESPONSIVE - real phone fills screen */
+@media(max-width:430px){
+  .device,.screen-wrap{border-radius:0!important;}
+  .device{width:100vw;height:100vh;}
+  .device::before,.device::after,.di{display:none!important;}
+  .overlay{border-radius:0!important;}
+}
+</style>
+</head>
+<body>
+<div class="device">
+  <div class="screen-wrap" id="app">
+    <div class="di"></div>
+
+    <!-- ══════════════════════════════════
+         HOME
+    ══════════════════════════════════ -->
+    <div class="page active" id="pg-home">
+      <div class="status-bar">
+        <span class="sb-time" id="clock">9:41</span>
+        <div class="sb-icons">
+          <svg width="16" height="11" fill="white" viewBox="0 0 16 11"><rect x="0" y="5.5" width="2.5" height="5.5" rx="1" opacity=".35"/><rect x="4" y="3.5" width="2.5" height="7.5" rx="1" opacity=".6"/><rect x="8" y="1.5" width="2.5" height="9.5" rx="1" opacity=".8"/><rect x="12" y="0" width="2.5" height="11" rx="1"/></svg>
+          <svg width="25" height="12" fill="white" viewBox="0 0 25 12"><rect x=".5" y=".5" width="21" height="11" rx="3.2" stroke="white" stroke-opacity=".3" fill="none"/><rect x="2" y="2" width="15" height="8" rx="2"/><path d="M22.5 4v4a2 2 0 000-4z" opacity=".35"/></svg>
+        </div>
+      </div>
+
+      <div class="scroll">
+        <div class="home-hero">
+          <div class="label" style="margin-bottom:4px;" data-i18n="daily_training">今日训练</div>
+          <div class="title" id="t-hero">脑力<span style="color:var(--teal);">对决</span> 🧠</div>
+        </div>
+
+        <div class="lang-bar">
+          <button class="lang-btn on" id="lb-zh" onclick="setLang('zh')">🇨🇳 中文</button>
+          <button class="lang-btn" id="lb-en" onclick="setLang('en')">🇺🇸 EN</button>
+          <button class="lang-btn" id="lb-ja" onclick="setLang('ja')">🇯🇵 日本語</button>
+        </div>
+        <div class="label px" style="margin-bottom:12px;" id="t-choose-mode">选择模式</div>
+
+        <div class="mode-grid">
+          <div class="mode-item m-teal" onclick="startSolo()">
+            <div class="mi-top"><span class="mi-icon">🃏</span><span class="mi-badge bg-teal" data-i18n="solo_badge">单人</span></div>
+            <div class="mi-title" data-i18n="mode1_title">记忆翻牌</div>
+            <div class="mi-desc" data-i18n="mode1_desc">翻开卡片找到所有配对，挑战速度与记忆力极限</div>
+            <div class="mi-tags"><span class="tag">⏱ 计时</span><span class="tag">🔥 连击</span><span class="tag">3档难度</span></div>
+          </div>
+
+          <div class="mode-item m-red" onclick="showPage('pg-pksetup')">
+            <div class="mi-top"><span class="mi-icon">⚔️</span><span class="mi-badge bg-red" data-i18n="pk_badge">双人PK</span></div>
+            <div class="mi-title" data-i18n="mode2_title">对战翻牌</div>
+            <div class="mi-desc" data-i18n="mode2_desc">两人同屏对战！轮流翻牌，谁配对多谁赢</div>
+            <div class="mi-tags"><span class="tag">👥 本地双人</span><span class="tag">🏆 胜负判定</span></div>
+          </div>
+
+          <div class="mode-item m-yellow" onclick="showPage('pg-dgsetup')">
+            <div class="mi-top"><span class="mi-icon">🎨</span><span class="mi-badge bg-yellow" data-i18n="dg_badge">记忆挑战</span></div>
+            <div class="mi-title" data-i18n="mode3_title">我画我猜</div>
+            <div class="mi-desc" data-i18n="mode3_desc">20组词语快闪 → 分心小游戏 → 随机考验你的记忆！</div>
+            <div class="mi-tags"><span class="tag">📝 快闪词</span><span class="tag">🧩 干扰关</span><span class="tag">🎯 考验</span></div>
+          </div>
+        </div>
+
+        <div class="lb-wrap">
+          <div class="label" style="margin-bottom:10px;" data-i18n="leaderboard">本周排行 🏅</div>
+          <div class="lb-row"><span class="lb-rank g">1</span><span class="lb-name">记忆大师</span><span class="lb-score">2,840</span></div>
+          <div class="lb-row"><span class="lb-rank s">2</span><span class="lb-name">闪电大脑</span><span class="lb-score">2,155</span></div>
+          <div class="lb-row"><span class="lb-rank b">3</span><span class="lb-name">你</span><span class="lb-score" id="my-best">—</span></div>
+        </div>
+      </div>
+      <div class="bnav">
+        <button class="bntab on" id="bntab-home" onclick="switchTab('home')"><span>🏠</span><span data-i18n="nav_home">主页</span></button>
+        <button class="bntab" id="bntab-hist" onclick="switchTab('hist')"><span>📈</span><span data-i18n="nav_hist">记录</span></button>
+      </div>
+      <div class="hbar"><i></i></div>
+    </div>
+
+
+    <!-- ══════════════════════════════════
+         LEVEL SELECT
+    ══════════════════════════════════ -->
+    <div class="page" id="pg-levelselect">
+      <div class="status-bar"><span class="sb-time">9:41</span></div>
+      <div style="flex-shrink:0;padding:4px 22px 12px;display:flex;align-items:center;gap:12px;">
+        <button class="back-btn" onclick="showPage('pg-home')">← 返回</button>
+        <div>
+          <div class="title" style="font-size:22px;" data-i18n="level_select_title">🃏 选择关卡</div>
+          <div style="font-size:11px;color:var(--muted);" data-i18n="level_unlock_hint">通关后解锁下一关</div>
+        </div>
+      </div>
+      <div class="scroll" style="padding:0 18px 18px;">
+        <div id="level-list"></div>
+      </div>
+      <div class="hbar"><i></i></div>
+    </div>
+
+    <!-- ══════════════════════════════════
+         DG SETUP (Theme Select)
+    ══════════════════════════════════ -->
+    <div class="page" id="pg-dgsetup">
+      <div class="status-bar"><span class="sb-time">9:41</span></div>
+      <div class="setup-body">
+        <button class="back-btn" onclick="showPage('pg-home')">← 返回</button>
+        <div>
+          <div class="title" style="font-size:22px;" data-i18n="dg_setup_title">🎨 选择主题</div>
+          <div class="sub" style="margin-top:4px;" data-i18n="dg_setup_sub">AI将生成该主题的20个随机词组</div>
+        </div>
+        <div class="theme-grid" id="theme-grid">
+          <div class="theme-chip selected" data-theme="随机混合" onclick="selectTheme(this)">
+            <span class="tc-icon">🎲</span>
+            <div class="tc-name">随机混合</div>
+            <div class="tc-desc">什么都有</div>
+          </div>
+          <div class="theme-chip" data-theme="日常生活" onclick="selectTheme(this)">
+            <span class="tc-icon">🏠</span>
+            <div class="tc-name">日常生活</div>
+            <div class="tc-desc">家居·食物·活动</div>
+          </div>
+          <div class="theme-chip" data-theme="自然与动物" onclick="selectTheme(this)">
+            <span class="tc-icon">🦋</span>
+            <div class="tc-name">自然与动物</div>
+            <div class="tc-desc">动植物·天气·地理</div>
+          </div>
+          <div class="theme-chip" data-theme="科技与未来" onclick="selectTheme(this)">
+            <span class="tc-icon">🚀</span>
+            <div class="tc-name">科技与未来</div>
+            <div class="tc-desc">科技·太空·AI</div>
+          </div>
+          <div class="theme-chip" data-theme="文化与艺术" onclick="selectTheme(this)">
+            <span class="tc-icon">🎭</span>
+            <div class="tc-name">文化与艺术</div>
+            <div class="tc-desc">音乐·电影·文学</div>
+          </div>
+          <div class="theme-chip" data-theme="体育与运动" onclick="selectTheme(this)">
+            <span class="tc-icon">⚽</span>
+            <div class="tc-name">体育与运动</div>
+            <div class="tc-desc">运动·赛事·健身</div>
+          </div>
+          <div class="theme-chip" data-theme="食物与美食" onclick="selectTheme(this)">
+            <span class="tc-icon">🍜</span>
+            <div class="tc-name">食物与美食</div>
+            <div class="tc-desc">各国料理·食材</div>
+          </div>
+          <div class="theme-chip" data-theme="职业与工作" onclick="selectTheme(this)">
+            <span class="tc-icon">💼</span>
+            <div class="tc-name">职业与工作</div>
+            <div class="tc-desc">职业·技能·工具</div>
+          </div>
+        </div>
+        <button class="btn btn-yellow" onclick="generateWords()" id="gen-btn" data-i18n="gen_words_btn">✨ AI生成词组</button>
+      </div>
+      <div class="hbar"><i></i></div>
+    </div>
+
+    <!-- ══════════════════════════════════
+         DG LOADING
+    ══════════════════════════════════ -->
+    <div class="page" id="pg-dgloading">
+      <div class="status-bar"></div>
+      <div class="loading-wrap">
+        <div class="loading-spinner"></div>
+        <div style="text-align:center;">
+          <div style="font-size:18px;font-weight:900;color:var(--text);" id="loading-title">AI 正在生成词组...</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:4px;" id="loading-sub">主题：随机混合</div>
+        </div>
+        <div class="loading-words" id="loading-words"></div>
+      </div>
+      <div class="hbar"><i></i></div>
+    </div>
+
+    <!-- ══════════════════════════════════
+         PK SETUP
+    ══════════════════════════════════ -->
+    <div class="page" id="pg-pksetup">
+      <div class="status-bar"><span class="sb-time" id="clock2">9:41</span></div>
+      <div class="setup-body">
+        <button class="back-btn" onclick="showPage('pg-home')">← 返回</button>
+        <div>
+          <div class="title" style="font-size:24px;" data-i18n="pk_setup_title">⚔️ 对战设置</div>
+          <div class="sub" style="margin-top:5px;" data-i18n="pk_setup_sub">输入两位玩家名字，开始对决！</div>
+        </div>
+        <div class="card-block">
+          <div class="label" style="color:var(--red);margin-bottom:8px;" data-i18n="player1_lbl">🔴 玩家 1</div>
+          <input class="input-field" id="p1name" data-i18n-ph="enter_name" placeholder="输入名字..." maxlength="8" type="text">
+        </div>
+        <div class="card-block">
+          <div class="label" style="color:var(--blue);margin-bottom:8px;" data-i18n="player2_lbl">🔵 玩家 2</div>
+          <input class="input-field" id="p2name" data-i18n-ph="enter_name" placeholder="输入名字..." maxlength="8" type="text">
+        </div>
+        <div>
+          <div class="label" style="margin-bottom:9px;" data-i18n="select_diff">选择难度</div>
+          <div class="diff-row">
+            <button class="diff-opt on" id="diff0" onclick="setDiff(0)" data-i18n="diff_easy">🌱 简单</button>
+            <button class="diff-opt" id="diff1" onclick="setDiff(1)" data-i18n="diff_med">🔥 中等</button>
+            <button class="diff-opt" id="diff2" onclick="setDiff(2)" data-i18n="diff_hard">⚡ 困难</button>
+          </div>
+        </div>
+        <button class="btn btn-red" style="margin-top:auto;" onclick="startPK()" data-i18n="start_pk">开始对战 ⚔️</button>
+      </div>
+      <div class="hbar"><i></i></div>
+    </div>
+
+
+    <!-- ══════════════════════════════════
+         CARD GAME
+    ══════════════════════════════════ -->
+    <div class="page" id="pg-game">
+      <div class="turn-flash" id="turn-flash">轮到你了！</div>
+      <div class="status-bar" style="padding-bottom:4px;">
+        <button class="back-btn" onclick="quitGame()">← 退出</button>
+        <span style="font-size:11px;color:var(--muted);font-weight:700;letter-spacing:.1em;text-transform:uppercase;" id="mode-tag">单人模式</span>
+      </div>
+
+      <div class="cg-body">
+        <!-- PK board -->
+        <div class="pk-board" id="pk-board" style="display:none;">
+          <div class="pk-cell" id="pkcell1">
+            <div class="pk-name" id="pkn1">玩家1</div>
+            <div class="pk-pts" id="pkp1">0</div>
+            <div class="pk-indicator" id="pki1"></div>
+          </div>
+          <div style="display:flex;align-items:center;font-size:18px;font-weight:900;color:var(--muted);">VS</div>
+          <div class="pk-cell" id="pkcell2">
+            <div class="pk-name" id="pkn2">玩家2</div>
+            <div class="pk-pts" id="pkp2">0</div>
+            <div class="pk-indicator" id="pki2"></div>
+          </div>
+        </div>
+
+        <!-- Solo stats -->
+        <div class="stat-row" id="solo-stats">
+          <div class="stat-box"><div class="stat-lbl" data-i18n="stat_score">得分</div><div class="stat-val c-red" id="s-score">0</div></div>
+          <div class="stat-box"><div class="stat-lbl" data-i18n="stat_miss">错误</div><div class="stat-val" id="s-miss">0</div></div>
+          <div class="stat-box"><div class="stat-lbl" data-i18n="stat_combo">连击</div><div class="stat-val c-teal" id="s-combo">0</div></div>
+        </div>
+
+        <!-- Timer (solo only) -->
+        <div class="timer-wrap" id="timer-wrap">
+          <span style="font-size:11px;color:var(--muted);">⏱</span>
+          <div class="timer-track"><div class="timer-bar" id="timer-bar" style="width:100%"></div></div>
+          <div class="timer-n" id="timer-n">60</div>
+        </div>
+
+        <!-- Progress -->
+        <div class="prog-wrap">
+          <div class="prog-lbl"><span data-i18n="prog_label">进度</span><span id="prog-txt">0/0</span></div>
+          <div class="prog-track"><div class="prog-fill" id="prog-fill" style="width:0%"></div></div>
+        </div>
+
+        <!-- Grid -->
+        <div class="card-grid g4" id="card-grid"></div>
+      </div>
+
+      <div class="turn-overlay" id="turn-overlay" style="opacity:0;"><div class="turn-overlay-pill" id="turn-overlay-pill">👆 玩家1 的回合</div></div>
+      <div class="cg-footer">
+        <button class="btn btn-ghost" id="hint-btn" onclick="useHint()">💡 提示</button>
+        <button class="btn btn-red" style="flex:2;" onclick="restartCurrent()">🔄 重来</button>
+      </div>
+      <div class="hbar"><i></i></div>
+    </div>
+
+
+    <!-- ══════════════════════════════════
+         DRAW & GUESS
+    ══════════════════════════════════ -->
+    <div class="page" id="pg-dg">
+
+      <!-- Phase 1: Flash -->
+      <div class="dg-phase active" id="dg1">
+        <div class="status-bar" style="padding-bottom:4px;">
+          <button class="back-btn" onclick="quitGame()">← 退出</button>
+          <span style="font-size:11px;color:var(--muted);font-weight:700;letter-spacing:.08em;" id="flash-counter">0/20</span>
+        </div>
+        <div class="px" style="margin-bottom:4px;">
+          <div class="label" data-i18n="flash_phase_label">第一阶段 · 快速记忆</div>
+          <div style="font-size:20px;font-weight:900;color:var(--text);" id="dg1-sub">准备好了吗？</div>
+        </div>
+        <div class="flash-content">
+          <div class="flash-card" id="flash-card">
+            <div class="flash-zh" id="flash-zh">🚀</div>
+            <div class="flash-en" id="flash-en"></div>
+            <span class="flash-cat" id="flash-cat" style="display:none;"></span>
+          </div>
+          <div class="flash-prog-bar"><div class="flash-prog-fill" id="flash-pfill" style="width:100%"></div></div>
+          <div class="flash-dots" id="flash-dots"></div>
+          <div style="font-size:12px;color:var(--muted);text-align:center;line-height:1.5;" data-i18n="flash_hint">👀 记住这个词！可以用纸笔辅助记忆</div>
+        </div>
+        <div class="hbar"><i></i></div>
+      </div>
+
+      <!-- Phase 2: Distraction -->
+      <div class="dg-phase" id="dg2">
+        <div class="status-bar" style="padding-bottom:4px;">
+          <span style="font-size:14px;font-weight:900;color:var(--yellow);" data-i18n="dist_phase_label">🧩 分心关卡</span>
+          <span style="font-size:13px;font-weight:800;font-family:'DM Mono',monospace;color:var(--muted);" id="dist-timer">60s</span>
+        </div>
+        <div class="px" style="margin-bottom:10px;">
+          <div class="label">第二阶段 · 注意力干扰</div>
+          <div style="font-size:18px;font-weight:900;color:var(--text);" id="dg2-title">完成小游戏</div>
+        </div>
+        <div class="dist-content">
+          <div class="mg-card">
+            <div class="mg-title" id="mg-name">小游戏</div>
+            <div id="mg-content"></div>
+          </div>
+          <div class="card-block" style="display:flex;justify-content:space-between;align-items:center;">
+            <span class="label" data-i18n="dist_score_label">分心得分</span>
+            <span style="font-size:26px;font-weight:900;font-family:'DM Mono',monospace;color:var(--yellow);" id="dist-score">0</span>
+          </div>
+        </div>
+        <div class="hbar"><i></i></div>
+      </div>
+
+      <!-- Phase 3: Recall -->
+      <div class="dg-phase" id="dg3">
+        <div class="status-bar" style="padding-bottom:4px;">
+          <span style="font-size:14px;font-weight:900;color:var(--purple);" data-i18n="recall_phase_label">🎯 随机考验</span>
+          <span style="font-size:13px;font-weight:800;font-family:'DM Mono',monospace;color:var(--muted);" id="recall-prog">1/5</span>
+        </div>
+        <div class="px" style="margin-bottom:10px;">
+          <div class="label">第三阶段 · 回忆测试</div>
+          <div style="font-size:18px;font-weight:900;color:var(--text);" data-i18n="recall_question">你还记得吗？</div>
+        </div>
+        <div class="recall-content">
+          <div class="recall-q-card">
+            <div class="label" style="margin-bottom:5px;" id="recall-qnum">第 1 题</div>
+            <div style="font-size:20px;font-weight:900;color:var(--text);" id="recall-qtxt">?</div>
+            <div style="font-size:12px;color:var(--muted);margin-top:3px;" id="recall-qsub"></div>
+          </div>
+          <div class="recall-opts" id="recall-opts"></div>
+          <div class="card-block" style="display:flex;justify-content:space-between;align-items:center;">
+            <span class="label" data-i18n="recall_score_label">记忆得分</span>
+            <span style="font-size:26px;font-weight:900;font-family:'DM Mono',monospace;color:var(--purple);" id="recall-score">0</span>
+          </div>
+        </div>
+        <div class="hbar"><i></i></div>
+      </div>
+
+    </div><!-- /pg-dg -->
+
+
+    <!-- ══════════════════════════════════
+         RESULTS
+    ══════════════════════════════════ -->
+    <div class="page" id="pg-results">
+      <div class="status-bar" style="flex-shrink:0;"></div>
+      <div class="scroll">
+        <div style="padding:0 18px 24px;display:flex;flex-direction:column;gap:12px;align-items:center;">
+          <div style="text-align:center;padding-top:4px;">
+            <div class="res-icon" id="res-icon" style="font-size:56px;display:block;margin-bottom:6px;">🎉</div>
+            <div id="res-title" style="font-size:28px;font-weight:900;color:var(--text);">游戏结束！</div>
+          </div>
+          <div class="rating-badge" id="rating-badge">
+            <div class="rating-emoji" id="rating-emoji">🤔</div>
+            <div class="rating-title" id="rating-title">评级中...</div>
+            <div class="rating-desc" id="rating-desc"></div>
+          </div>
+          <div class="score-meter" id="score-meter-wrap">
+            <div class="meter-labels">
+              <span>0</span>
+              <span style="color:var(--text);font-weight:700;" id="meter-score-lbl">得分 0</span>
+              <span id="meter-max-lbl">300</span>
+            </div>
+            <div class="meter-track" id="meter-track">
+              <div class="meter-fill" id="meter-fill" style="width:0%;background:linear-gradient(90deg,var(--teal),var(--blue));"></div>
+              <div class="meter-avg-line" id="meter-avg-line" style="left:50%;"><div class="meter-avg-lbl">普通人</div></div>
+              <div class="meter-dot" id="meter-dot" style="left:0%;"></div>
+            </div>
+            <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--muted);font-weight:700;padding:0 2px;">
+              <span>NPC</span><span>拉</span><span>夯</span><span>顶尖</span><span>人上人</span>
+            </div>
+          </div>
+          <div id="res-stats-solo" style="display:flex;gap:8px;width:100%;">
+            <div class="res-stat"><div class="rs-val" id="rs-score">0</div><div class="rs-lab" data-i18n="stat_score">得分</div></div>
+            <div class="res-stat"><div class="rs-val" id="rs-time">0s</div><div class="rs-lab" data-i18n="stat_time">用时</div></div>
+            <div class="res-stat"><div class="rs-val" id="rs-miss">0</div><div class="rs-lab" data-i18n="stat_miss">错误</div></div>
+          </div>
+          <div class="pk-res-wrap" id="res-stats-pk" style="display:none;width:100%;">
+            <div class="pk-res-row" id="pk-row1">
+              <span style="font-size:26px;">🏆</span>
+              <div style="flex:1"><div class="pra-name" id="pk-r1-name">玩家1</div><span class="win-tag" id="pk-r1-tag">胜利！</span></div>
+              <div class="pra-pts" id="pk-r1-pts">0</div>
+            </div>
+            <div class="pk-res-row" style="margin-top:6px;" id="pk-row2">
+              <span style="font-size:26px;">💪</span>
+              <div style="flex:1"><div class="pra-name" id="pk-r2-name">玩家2</div><span class="lose-tag" data-i18n="lose_tag">下次加油</span></div>
+              <div class="pra-pts" id="pk-r2-pts">0</div>
+            </div>
+          </div>
+          <div class="taunt-box" id="taunt-box">
+            <div class="taunt-lbl">🎤 系统点评</div>
+            <div class="taunt-txt" id="taunt-txt">计算中...</div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:9px;width:100%;margin-top:4px;">
+            <button class="btn btn-teal" id="next-lv-btn" style="display:none;" onclick="goNextLevel()">下一关 ▶</button>
+            <button class="btn btn-teal" id="play-again-btn" onclick="playAgain()" data-i18n="play_again">再玩一次 🔄</button>
+            <button class="btn btn-ghost" onclick="showPage('pg-home')" data-i18n="go_home">回主页</button>
+          </div>
+        </div>
+      </div>
+      <div class="hbar"><i></i></div>
+    </div>
+
+    <!-- HISTORY PAGE -->
+    <div class="page" id="pg-history">
+      <div class="status-bar" style="flex-shrink:0;"><span class="sb-time" id="clock3">9:41</span></div>
+      <div class="scroll">
+        <div class="hist-header">
+          <div class="label" style="margin-bottom:4px;" data-i18n="hist_label">记忆档案</div>
+          <div class="title" style="font-size:26px;" data-i18n="hist_title">成长记录 📈</div>
+        </div>
+        <div style="padding:0 18px 18px;">
+          <div class="chart-wrap">
+            <div class="chart-title">得分趋势</div>
+            <div class="chart-sub">与普通人均分（150）对比</div>
+            <div class="chart-area"><canvas id="hist-chart"></canvas></div>
+          </div>
+          <div class="hist-stats-row">
+            <div class="hs-card"><div class="hs-val" id="hs-best">—</div><div class="hs-lab" data-i18n="best_score">最高分</div></div>
+            <div class="hs-card"><div class="hs-val" id="hs-avg">—</div><div class="hs-lab" data-i18n="avg_score">平均分</div></div>
+            <div class="hs-card"><div class="hs-val" id="hs-games">0</div><div class="hs-lab" data-i18n="total_games">总场次</div></div>
+          </div>
+          <div class="card-block" style="margin-bottom:12px;display:flex;align-items:center;gap:12px;">
+            <div style="font-size:32px;" id="hs-cur-emoji">🤔</div>
+            <div>
+              <div style="font-size:11px;color:var(--muted);font-weight:700;letter-spacing:.1em;text-transform:uppercase;" data-i18n="cur_rank">当前段位</div>
+              <div style="font-size:20px;font-weight:900;color:var(--text);" id="hs-cur-rating">暂无数据</div>
+              <div style="font-size:11px;color:var(--muted);" id="hs-cur-desc">打一局看看你在哪个水平</div>
+            </div>
+          </div>
+          <div class="label" style="margin-bottom:9px;">历史记录</div>
+          <div class="hist-list" id="hist-list">
+            <div class="empty-state">暂无记录<br><span style="font-size:12px;">去打一局吧！🎮</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="hbar"><i></i></div>
+    </div>
+
+    <!-- ══════════════════════════════════
+         OVERLAY / MODAL
+    ══════════════════════════════════ -->
+    <div class="overlay" id="overlay">
+      <div class="ov-icon" id="ov-icon">✨</div>
+      <div class="ov-title" id="ov-title">标题</div>
+      <div class="ov-sub" id="ov-sub">副标题</div>
+      <div class="ov-btns" id="ov-btns"></div>
+    </div>
+
+    <div class="overlay" id="cd-overlay">
+      <div class="label" id="cd-label" style="font-size:13px;">游戏开始！</div>
+      <div class="cd-num" id="cd-num">3</div>
+    </div>
+
+  </div><!-- /screen-wrap -->
+</div><!-- /device -->
+
+<script>
+// ════════════════════════════════════
+//  DATA
+// ════════════════════════════════════
+const LEVELS = [
+  {name:'第1关',lv:'入门',  pairs:4, time:999,grid:'g3',bonus:0,   desc:'无限时'},
+  {name:'第2关',lv:'简单',  pairs:6, time:90, grid:'g3',bonus:50,  desc:'90秒'},
+  {name:'第3关',lv:'简单',  pairs:6, time:70, grid:'g3',bonus:80,  desc:'70秒'},
+  {name:'第4关',lv:'普通',  pairs:8, time:80, grid:'g4',bonus:100, desc:'80秒'},
+  {name:'第5关',lv:'普通',  pairs:8, time:60, grid:'g4',bonus:120, desc:'60秒'},
+  {name:'第6关',lv:'挑战',  pairs:10,time:70, grid:'g4',bonus:150, desc:'70秒'},
+  {name:'第7关',lv:'挑战',  pairs:10,time:55, grid:'g4',bonus:180, desc:'55秒'},
+  {name:'第8关',lv:'困难',  pairs:12,time:80, grid:'g4',bonus:200, desc:'12对'},
+  {name:'第9关',lv:'困难',  pairs:12,time:60, grid:'g4',bonus:250, desc:'60秒'},
+  {name:'第10关',lv:'地狱', pairs:14,time:70, grid:'g4',bonus:300, desc:'地狱'},
+  {name:'第11关',lv:'地狱', pairs:14,time:55, grid:'g4',bonus:350, desc:'55秒'},
+  {name:'第12关',lv:'神级', pairs:16,time:90, grid:'g4',bonus:500, desc:'最终关'},
+];
+const LEVEL_COLORS = {
+  '入门':'var(--teal)','简单':'#4DA6FF','普通':'var(--yellow)',
+  '挑战':'#FF9A3C','困难':'var(--red)','地狱':'#e63946','神级':'var(--purple)'
+};
+const EMOJI_SETS = [
+  ['🍎','🍊','🍋','🍇','🍓','🍒','🥝','🍑','🥭','🍍'],
+  ['🐶','🐱','🐰','🦊','🐻','🐼','🐨','🐯','🦁','🐸'],
+  ['⚽','🏀','🎾','🏈','⚾','🏐','🏉','🎱','🏓','🥊'],
+  ['🌸','🌺','🌻','🌹','🌷','🌼','🪷','🍀','🌿','🍁'],
+];
+const WORDS = [
+  {zh:'苹果',en:'Apple',cat:'食物'},{zh:'宇宙飞船',en:'Spaceship',cat:'科技'},
+  {zh:'彩虹',en:'Rainbow',cat:'自然'},{zh:'钢琴',en:'Piano',cat:'音乐'},
+  {zh:'恐龙',en:'Dinosaur',cat:'动物'},{zh:'时钟',en:'Clock',cat:'物品'},
+  {zh:'灯塔',en:'Lighthouse',cat:'建筑'},{zh:'气球',en:'Balloon',cat:'玩具'},
+  {zh:'眼镜',en:'Glasses',cat:'物品'},{zh:'雪人',en:'Snowman',cat:'自然'},
+  {zh:'蜡烛',en:'Candle',cat:'物品'},{zh:'地球仪',en:'Globe',cat:'地理'},
+  {zh:'蜜蜂',en:'Bee',cat:'动物'},{zh:'帆船',en:'Sailboat',cat:'交通'},
+  {zh:'魔法棒',en:'Magic Wand',cat:'魔幻'},{zh:'章鱼',en:'Octopus',cat:'动物'},
+  {zh:'蘑菇',en:'Mushroom',cat:'食物'},{zh:'沙漏',en:'Hourglass',cat:'物品'},
+  {zh:'热气球',en:'Hot Air Balloon',cat:'交通'},{zh:'螃蟹',en:'Crab',cat:'动物'},
+  {zh:'降落伞',en:'Parachute',cat:'运动'},{zh:'万花筒',en:'Kaleidoscope',cat:'玩具'},
+];
+
+// ════════════════════════════════════
+//  GLOBAL STATE
+// ════════════════════════════════════
+let G = {
+  mode: 'solo', // solo | pk | dg
+  level: 0,
+  pkDiff: 0,
+  // card game
+  cards: [], flipped: [], matched: 0, total: 0,
+  score: 0, miss: 0, combo: 0,
+  time: 60, maxTime: 60, timerInt: null,
+  locked: false, hinted: false, startTs: 0,
+  isPK: false,
+  p1: {name:'玩家1', pts:0, pairs:0},
+  p2: {name:'玩家2', pts:0, pairs:0},
+  turn: 1,
+  // draw & guess
+  dgWords: [], dgIdx: 0, dgFlashInt: null,
+  dgDistTime: 60, dgDistInt: null, dgDistScore: 0,
+  dgMGIdx: 0,
+  dgRecallQs: [], dgRecallIdx: 0, dgRecallScore: 0,
+};
+
+// ════════════════════════════════════
+//  NAVIGATION
+// ════════════════════════════════════
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function quitGame() {
+  showOverlay('⚠️',t('quit_title'),t('quit_sub'), [
+    {text:t('quit_continue'), cls:'btn-teal', fn: hideOverlay},
+    {text:t('quit_exit'), cls:'btn-ghost', fn: () => { hideOverlay(); stopAll(); showPage('pg-home'); }},
+  ]);
+}
+
+function stopAll() {
+  clearInterval(G.timerInt);
+  clearInterval(G.dgFlashInt);
+  clearInterval(G.dgDistInt);
+}
+
+// ════════════════════════════════════
+//  OVERLAY / COUNTDOWN
+// ════════════════════════════════════
+function showOverlay(icon, title, sub, btns) {
+  document.getElementById('ov-icon').textContent = icon;
+  document.getElementById('ov-title').textContent = title;
+  document.getElementById('ov-sub').textContent = sub;
+  const bc = document.getElementById('ov-btns');
+  bc.innerHTML = '';
+  btns.forEach(b => {
+    const btn = document.createElement('button');
+    btn.className = 'btn ' + b.cls;
+    btn.textContent = b.text;
+    btn.onclick = b.fn;
+    bc.appendChild(btn);
+  });
+  document.getElementById('overlay').classList.add('show');
+}
+function hideOverlay() { document.getElementById('overlay').classList.remove('show'); }
+
+function countdown(label, cb) {
+  const ov = document.getElementById('cd-overlay');
+  const num = document.getElementById('cd-num');
+  document.getElementById('cd-label').textContent = label;
+  ov.classList.add('show');
+  let n = 3;
+  num.textContent = n;
+  const t = setInterval(() => {
+    n--;
+    if (n <= 0) { clearInterval(t); ov.classList.remove('show'); cb(); }
+    else num.textContent = n;
+  }, 1000);
+}
+
+// ════════════════════════════════════
+//  CARD GAME
+// ════════════════════════════════════
+function startSolo() {
+  G.mode = 'solo'; G.isPK = false;
+  showPage('pg-levelselect');
+  renderLevelSelect();
+}
+function renderLevelSelect() {
+  const best = JSON.parse(localStorage.getItem('level_best')||'{}');
+  const ul = document.getElementById('level-list');
+  ul.innerHTML = '';
+  LEVELS.forEach((lv,i) => {
+    const unlocked = i===0 || best[i-1]!==undefined;
+    const bestScore = best[i]||null;
+    const el = document.createElement('div');
+    el.className = 'lv-item' + (unlocked?'':' lv-locked');
+    const col = LEVEL_COLORS[lv.lv]||'var(--teal)';
+    el.innerHTML = `
+      <div class="lv-left">
+        <div class="lv-num" style="background:${unlocked?col:'var(--s3)'};color:${unlocked?'#000':'var(--muted)'};">${unlocked?''+(i+1):'🔒'}</div>
+        <div>
+          <div class="lv-name">${lv.name} <span class="lv-badge" style="background:${col}22;color:${col};">${lv.lv}</span></div>
+          <div class="lv-desc">${lv.desc} · ${lv.pairs}对</div>
+        </div>
+      </div>
+      <div class="lv-right">
+        ${bestScore!==null?`<div class="lv-best">${bestScore}</div><div class="lv-best-lab">最高分</div>`:''}
+        ${unlocked?'<div class="lv-arrow">▶</div>':''}
+      </div>`;
+    if (unlocked) el.onclick = () => {
+      G.level = i;
+      showPage('pg-game');
+      countdown('第'+(i+1)+'关 开始！', () => initCardGame(false, i));
+    };
+    ul.appendChild(el);
+  });
+}
+
+let pkDiffSel = 0;
+function setDiff(d) {
+  pkDiffSel = d;
+  [0,1,2].forEach(i => document.getElementById('diff'+i).classList.toggle('on', i===d));
+}
+function startPK() {
+  G.p1.name = document.getElementById('p1name').value.trim() || (LANG==='en'?'Player 1':LANG==='ja'?'プレイヤー1':'玩家1');
+  G.p2.name = document.getElementById('p2name').value.trim() || (LANG==='en'?'Player 2':LANG==='ja'?'プレイヤー2':'玩家2');
+  G.mode = 'pk'; G.isPK = true;
+  showPage('pg-game');
+  countdown(t('cd_battle'), () => initCardGame(true, pkDiffSel));
+}
+
+function initCardGame(isPK, level) {
+  stopAll();
+  const cfg = LEVELS[level];
+  G.isPK = isPK; G.level = level;
+  G.cards = []; G.flipped = []; G.matched = 0; G.total = cfg.pairs;
+  G.score = 0; G.miss = 0; G.combo = 0;
+  G.hinted = false; G.locked = false; G.startTs = Date.now();
+  G.maxTime = cfg.time; G.time = cfg.time;
+  G.p1.pts = 0; G.p1.pairs = 0;
+  G.p2.pts = 0; G.p2.pairs = 0;
+  G.turn = 1;
+
+  // UI visibility
+  document.getElementById('pk-board').style.display = isPK ? 'flex' : 'none';
+  document.getElementById('solo-stats').style.display = isPK ? 'none' : 'flex';
+  document.getElementById('timer-wrap').style.display = isPK ? 'none' : 'flex';
+  document.getElementById('hint-btn').style.display = isPK ? 'none' : 'block';
+  document.getElementById('hint-btn').textContent = t('hint_btn');
+  document.getElementById('hint-btn').style.opacity = '1';
+  document.getElementById('mode-tag').textContent = isPK ? t('mode_tag_pk') : t('mode_tag_solo');
+
+  if (isPK) {
+    document.getElementById('pkn1').textContent = G.p1.name;
+    document.getElementById('pkn2').textContent = G.p2.name;
+    refreshPK();
+  } else {
+    refreshSolo();
+    startTimer();
+  }
+
+  buildGrid(cfg);
+  refreshProg();
+  if(isPK) setTimeout(()=>showTurnOverlay(G.p1.name,true,t('turn_first')),300);
+}
+
+function buildGrid(cfg) {
+  const grid = document.getElementById('card-grid');
+  // For high pair counts, combine emoji sets
+  const allEmojis = shuffle([...EMOJI_SETS[0],...EMOJI_SETS[1],...EMOJI_SETS[2],...EMOJI_SETS[3]]);
+  const emojis = allEmojis.slice(0, cfg.pairs);
+  grid.className = 'card-grid ' + cfg.grid;
+  const deck = shuffle([...emojis, ...emojis]);
+  G.cards = deck.map((e) => ({emoji:e, flipped:false, matched:false}));
+  grid.innerHTML = '';
+  G.cards.forEach((cd, i) => {
+    const el = document.createElement('div');
+    el.className = 'card';
+    el.innerHTML = '<div class="card-inner"><div class="cface cback"></div><div class="cface cfront">'+cd.emoji+'</div></div>';
+    el.addEventListener('click', () => clickCard(i, el));
+    grid.appendChild(el);
+  });
+}
+
+function clickCard(i, el) {
+  if (G.locked || G.cards[i].flipped || G.cards[i].matched) return;
+  G.cards[i].flipped = true;
+  el.classList.add('flip');
+  G.flipped.push({i, el});
+
+  if (G.flipped.length === 2) {
+    G.locked = true;
+    const [a, b] = G.flipped;
+    if (G.cards[a.i].emoji === G.cards[b.i].emoji) {
+      // MATCH
+      setTimeout(() => {
+        const cls = G.isPK && G.turn === 1 ? 'done-red' : 'done';
+        a.el.classList.remove('flip'); a.el.classList.add(cls);
+        b.el.classList.remove('flip'); b.el.classList.add(cls);
+        G.cards[a.i].matched = true; G.cards[b.i].matched = true;
+        G.matched++;
+        if (G.isPK) {
+          if (G.turn === 1) { G.p1.pts += 20; G.p1.pairs++; }
+          else { G.p2.pts += 20; G.p2.pairs++; }
+          refreshPK();
+          showTurnOverlay(G.turn===1?G.p1.name:G.p2.name, G.turn===1, t('turn_match'));
+        } else {
+          G.combo++; G.score += Math.max(10, 30 - G.miss*2) + (G.combo>1 ? G.combo*5 : 0);
+          refreshSolo();
+        }
+        G.flipped = []; G.locked = false;
+        refreshProg();
+        if (G.matched === G.total) setTimeout(endGame, 400);
+      }, 300);
+    } else {
+      // MISS
+      setTimeout(() => {
+        a.el.classList.add('wrong'); b.el.classList.add('wrong');
+        setTimeout(() => {
+          a.el.classList.remove('flip','wrong'); b.el.classList.remove('flip','wrong');
+          G.cards[a.i].flipped = false; G.cards[b.i].flipped = false;
+          G.flipped = []; G.locked = false;
+          if (G.isPK) {
+            G.turn = G.turn === 1 ? 2 : 1;
+            refreshPK();
+            const next = G.turn===1 ? G.p1.name : G.p2.name;
+            showTurnOverlay(next, G.turn===1, t('turn_next'));
+          } else {
+            G.combo = 0; G.miss++;
+            refreshSolo();
+          }
+        }, 380);
+      }, 500);
+    }
+  }
+}
+
+function flashTurn(name, msg, bg) {
+  const el = document.getElementById('turn-flash');
+  el.textContent = name + '：' + msg;
+  el.style.background = bg;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 1600);
+}
+
+function startTimer() {
+  clearInterval(G.timerInt);
+  refreshTimer();
+  G.timerInt = setInterval(() => {
+    G.time--;
+    refreshTimer();
+    if (G.time <= 0) { clearInterval(G.timerInt); endGame(true); }
+  }, 1000);
+}
+function refreshTimer() {
+  const pct = (G.time / G.maxTime) * 100;
+  const bar = document.getElementById('timer-bar');
+  bar.style.width = pct + '%';
+  bar.style.background = G.time <= 10 ? 'linear-gradient(90deg,var(--red),#e63946)' : 'linear-gradient(90deg,var(--teal),var(--blue))';
+  document.getElementById('timer-n').textContent = G.time;
+}
+function refreshSolo() {
+  document.getElementById('s-score').textContent = G.score;
+  document.getElementById('s-miss').textContent = G.miss;
+  document.getElementById('s-combo').textContent = G.combo > 1 ? G.combo+'x' : G.combo;
+}
+function refreshPK() {
+  document.getElementById('pkp1').textContent = G.p1.pts;
+  document.getElementById('pkp2').textContent = G.p2.pts;
+  const c1 = document.getElementById('pkcell1'), c2 = document.getElementById('pkcell2');
+  c1.className = 'pk-cell' + (G.turn===1 ? ' p1-turn' : '');
+  c2.className = 'pk-cell' + (G.turn===2 ? ' my-turn' : '');
+  const isP1 = G.turn===1;
+  document.getElementById('pki1').textContent = isP1 ? '▶ '+(LANG==='en'?'Your Turn':LANG==='ja'?'あなたの番':'你的回合') : '';
+  document.getElementById('pki2').textContent = !isP1 ? '▶ '+(LANG==='en'?'Your Turn':LANG==='ja'?'あなたの番':'你的回合') : '';
+  document.getElementById('pki1').style.color = 'var(--red)';
+  document.getElementById('pki2').style.color = 'var(--teal)';
+}
+function showTurnOverlay(name, isP1, msg) {
+  const ov = document.getElementById('turn-overlay');
+  const pill = document.getElementById('turn-overlay-pill');
+  const color = isP1 ? '#FF5F5F' : '#3ECFB2';
+  pill.style.background = color;
+  pill.innerHTML = (isP1 ? '🔴' : '🔵') + ' <strong>' + name + '</strong> ' + msg;
+  ov.style.opacity = '1';
+  clearTimeout(ov._t);
+  ov._t = setTimeout(() => { ov.style.opacity = '0'; }, 2000);
+}
+function refreshProg() {
+  const pct = G.total > 0 ? (G.matched / G.total * 100) : 0;
+  document.getElementById('prog-fill').style.width = pct + '%';
+  document.getElementById('prog-txt').textContent = G.matched + '/' + G.total;
+}
+
+function endGame(timeout) {
+  clearInterval(G.timerInt);
+  if (G.isPK) {
+    const tied = G.p1.pairs === G.p2.pairs;
+    const w = G.p1.pairs >= G.p2.pairs ? G.p1 : G.p2;
+    const l = w === G.p1 ? G.p2 : G.p1;
+    showResults({type:'pk', icon: tied?'🤝':'🏆', title: tied?t('pk_draw'):t('pk_end'),
+      sub: tied?t('pk_draw_sub'):w.name+(LANG==='en'?' wins!':LANG==='ja'?' の勝ち！':'获胜！'), w, l});
+  } else {
+    const elapsed = Math.round((Date.now()-G.startTs)/1000);
+    const bonus = LEVELS[G.level].bonus||0;
+    const final = G.score + (timeout?0:G.time*2) + (G.matched===G.total&&!timeout?bonus:0);
+    const won = G.matched===G.total && !timeout;
+    // Save level best
+    const lb = JSON.parse(localStorage.getItem('level_best')||'{}');
+    if(!lb[G.level]||final>lb[G.level]) { lb[G.level]=final; localStorage.setItem('level_best',JSON.stringify(lb)); }
+    const nextLv = G.level+1 < LEVELS.length ? G.level+1 : null;
+    showResults({type:'solo',
+      icon: timeout?'⏰':G.miss===0?'🌟':'🏆',
+      title: timeout?t('title_timeout'):won&&G.miss===0?t('title_perfect'):won?t('title_cleared'):t('title_gameover'),
+      score: final, time: elapsed+'s', miss: G.miss, timeout: !!timeout,
+      won, level: G.level, nextLv, levelName: LEVELS[G.level].name});
+  }
+}
+
+function restartCurrent() {
+  stopAll();
+  countdown(t('cd_again'), () => initCardGame(G.isPK, G.level));
+}
+function useHint() {
+  if (G.hinted || G.locked) return;
+  G.hinted = true;
+  const btn = document.getElementById('hint-btn');
+  btn.textContent = t('hint_used'); btn.style.opacity = '.4';
+  document.querySelectorAll('#card-grid .card:not(.done)').forEach(c => c.classList.add('flip'));
+  G.locked = true;
+  setTimeout(() => {
+    document.querySelectorAll('#card-grid .card:not(.done)').forEach(c => c.classList.remove('flip'));
+    G.locked = false; G.score = Math.max(0, G.score-30); refreshSolo();
+  }, 1000);
+}
+
+// ════════════════════════════════════
+//  DRAW & GUESS
+// ════════════════════════════════════
+let selectedTheme = '随机混合';
+
+function selectTheme(el) {
+  document.querySelectorAll('.theme-chip').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedTheme = el.dataset.theme;
+}
+
+async function generateWords() {
+  const btn = document.getElementById('gen-btn');
+  btn.disabled = true;
+  btn.textContent = '生成中...';
+
+  showPage('pg-dgloading');
+  document.getElementById('loading-title').textContent = t('gen_loading_title');
+  document.getElementById('loading-sub').textContent = '主题：' + selectedTheme;
+  document.getElementById('loading-words').innerHTML = '';
+
+  try {
+    const themeDisplay = (LANG!=='zh' && I18N[LANG].themes?.[selectedTheme]) ? I18N[LANG].themes[selectedTheme][LANG] : selectedTheme;
+    const prompt = `Generate 20 Chinese words/phrases for memory training on the theme "${themeDisplay}".
+Rules:
+- Each entry: 2-5 Chinese characters, moderate difficulty
+- Words should be interesting, varied, concrete (mostly nouns)
+- Each word needs an English translation and a category label (2-4 Chinese chars)
+- Use at least 6 different categories
+
+Return ONLY a JSON array, no other text:
+[{"zh":"汉字","en":"English","cat":"类别"},...]`;
+
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        messages: [{role:'user', content: prompt}]
+      })
+    });
+
+    const data = await resp.json();
+    const text = data.content[0].text.trim();
+
+    // Parse JSON - strip any markdown fences
+    const clean = text.replace(/```json|```/g,'').trim();
+    const words = JSON.parse(clean);
+
+    if (!Array.isArray(words) || words.length < 10) throw new Error('词组数量不足');
+
+    // Preview words appearing one by one
+    const container = document.getElementById('loading-words');
+    document.getElementById('loading-title').textContent = t('gen_done_title');
+    document.getElementById('loading-sub').textContent = '共 ' + words.length + ' 个词语，即将开始';
+
+    for (let i = 0; i < words.length; i++) {
+      await new Promise(r => setTimeout(r, 80));
+      const tag = document.createElement('div');
+      tag.className = 'lw-tag';
+      tag.textContent = words[i].zh;
+      container.appendChild(tag);
+    }
+
+    await new Promise(r => setTimeout(r, 600));
+
+    // Start the game with generated words
+    startDrawGuessWithWords(words.slice(0, 20));
+
+  } catch(e) {
+    console.error(e);
+    // Fallback to static words if API fails
+    document.getElementById('loading-title').textContent = t('gen_fail_title');
+    document.getElementById('loading-sub').textContent = e.message || '网络错误';
+    await new Promise(r => setTimeout(r, 1500));
+    startDrawGuessWithWords(shuffle([...WORDS]).slice(0, 20));
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '✨ AI生成词组';
+  }
+}
+
+function startDrawGuess() {
+  // Direct start with static words (fallback / called from playAgain)
+  startDrawGuessWithWords(shuffle([...WORDS]).slice(0, 20));
+}
+
+function startDrawGuessWithWords(words) {
+  G.mode = 'dg';
+  G.dgWords = words;
+  G.dgIdx = 0; G.dgDistScore = 0; G.dgRecallScore = 0; G.dgMGIdx = 0;
+  G.dgRecallQs = []; G.dgRecallIdx = 0;
+  showPage('pg-dg');
+  setDGPhase(1);
+  buildFlashDots();
+  showOverlay('👀',t('gen_words_ready'),'主题：'+selectedTheme+'\n'+t('gen_ready_sub',{n:words.length}),[
+    {text:t('start_mem'), cls:'btn-teal', fn: () => { hideOverlay(); runFlash(); }},
+  ]);
+}
+
+function setDGPhase(n) {
+  [1,2,3].forEach(i => {
+    const el = document.getElementById('dg'+i);
+    el.classList.toggle('active', i===n);
+  });
+}
+
+function buildFlashDots() {
+  const c = document.getElementById('flash-dots');
+  c.innerHTML = '';
+  for (let i = 0; i < 20; i++) {
+    const d = document.createElement('div');
+    d.className = 'fdot'; d.id = 'fd'+i; c.appendChild(d);
+  }
+}
+
+function runFlash() {
+  showFlashWord();
+}
+
+function showFlashWord() {
+  if (G.dgIdx >= G.dgWords.length) { startDistraction(); return; }
+  const w = G.dgWords[G.dgIdx];
+  document.getElementById('flash-counter').textContent = (G.dgIdx+1) + '/20';
+  document.getElementById('dg1-sub').textContent = t('flash_remember');
+  document.getElementById('flash-zh').textContent = w.zh;
+  document.getElementById('flash-en').textContent = w.en;
+  const cat = document.getElementById('flash-cat');
+  cat.textContent = w.cat; cat.style.display = '';
+
+  // Dots
+  for (let i = 0; i < 20; i++) {
+    const d = document.getElementById('fd'+i);
+    if (d) d.className = 'fdot' + (i < G.dgIdx ? ' seen' : i === G.dgIdx ? ' now' : '');
+  }
+
+  // Progress bar reset
+  const pf = document.getElementById('flash-pfill');
+  pf.style.transition = 'none'; pf.style.width = '100%';
+  setTimeout(() => { pf.style.transition = 'width 2s linear'; pf.style.width = '0%'; }, 30);
+
+  G.dgIdx++;
+  G.dgFlashInt = setTimeout(showFlashWord, 2000);
+}
+
+// ─── DISTRACTION ───
+const MINI_GAMES = [
+  {nameKey:'mg_seq', init: initSeq},
+  {nameKey:'mg_color', init: initColor},
+  {nameKey:'mg_math', init: initMath},
+];
+let mgSeqAnswer=[], mgSeqInput=[], mgSeqState='';
+let mgColorTarget=[], mgColorState='';
+
+function startDistraction() {
+  clearInterval(G.dgFlashInt);
+  G.dgDistTime = 30; G.dgDistScore = 0; G.dgMGIdx = 0;
+  setDGPhase(2);
+  updateDistUI();
+  G.dgDistInt = setInterval(() => {
+    G.dgDistTime--;
+    updateDistUI();
+    if (G.dgDistTime <= 0) { clearInterval(G.dgDistInt); startRecall(); }
+  }, 1000);
+  loadMG(0);
+}
+function updateDistUI() {
+  document.getElementById('dist-timer').textContent = G.dgDistTime + 's';
+  document.getElementById('dist-score').textContent = G.dgDistScore;
+}
+function loadMG(idx) {
+  const mg = MINI_GAMES[idx % MINI_GAMES.length];
+  const mgName = t(mg.nameKey);
+  document.getElementById('mg-name').textContent = mgName;
+  document.getElementById('dg2-title').textContent = mgName;
+  document.getElementById('mg-content').innerHTML = '';
+  mg.init();
+}
+function nextMG() { G.dgMGIdx++; loadMG(G.dgMGIdx); }
+
+function initSeq() {
+  mgSeqAnswer = []; mgSeqInput = []; mgSeqState = 'showing';
+  const len = Math.min(4 + Math.floor(G.dgMGIdx/2), 7);
+  for (let i=0;i<len;i++) mgSeqAnswer.push(Math.floor(Math.random()*9)+1);
+  const c = document.getElementById('mg-content');
+  c.innerHTML = '<div class="seq-disp" id="sdsp"></div><div style="font-size:12px;color:var(--muted);text-align:center;margin:6px 0;" id="sinst">记住顺序...</div><div class="seq-btns" id="sbtns" style="display:none;"></div>';
+  const disp = document.getElementById('sdsp');
+  mgSeqAnswer.forEach(n => {
+    const el = document.createElement('div');
+    el.className = 'seq-n'; el.textContent = n; disp.appendChild(el);
+  });
+  setTimeout(() => {
+    disp.querySelectorAll('.seq-n').forEach(el => { el.textContent='?'; });
+    document.getElementById('sinst').textContent = t('mg_seq_inst_input');
+    const btns = document.getElementById('sbtns'); btns.style.display = 'flex';
+    const nums = [...new Set([...mgSeqAnswer, ...shuffle([1,2,3,4,5,6,7,8,9]).slice(0,3)])].slice(0,9);
+    shuffle(nums).forEach(n => {
+      const b = document.createElement('button');
+      b.className = 'seq-btn'; b.textContent = n;
+      b.onclick = () => {
+        if (mgSeqState !== 'input') return;
+        mgSeqInput.push(n);
+        const idx = mgSeqInput.length-1;
+        const ok = n === mgSeqAnswer[idx];
+        const ns = disp.querySelectorAll('.seq-n')[idx];
+        if (ns) { ns.textContent = n; ns.style.background = ok?'var(--teal)':'var(--red)'; ns.style.color = ok?'#000':'#fff'; }
+        if (!ok) { G.dgDistScore = Math.max(0, G.dgDistScore-5); setTimeout(nextMG, 500); return; }
+        if (mgSeqInput.length === mgSeqAnswer.length) {
+          G.dgDistScore += mgSeqAnswer.length*10; updateDistUI();
+          setTimeout(nextMG, 500);
+        }
+      };
+      btns.appendChild(b);
+    });
+    mgSeqState = 'input';
+  }, 2000);
+}
+
+function initColor() {
+  mgColorTarget = []; mgColorState = 'showing';
+  const size = Math.min(3+Math.floor(G.dgMGIdx/3), 4);
+  const total = size*size;
+  const COLS = ['#FF5F5F','#FFD166','#3ECFB2','#4DA6FF','#A78BFA','#FF9A3C'];
+  const litN = Math.min(3+Math.floor(G.dgMGIdx/2), 6);
+  const positions = shuffle([...Array(total).keys()]).slice(0, litN);
+  for (let i=0;i<total;i++) mgColorTarget.push(positions.includes(i) ? COLS[positions.indexOf(i)%COLS.length] : null);
+  const c = document.getElementById('mg-content');
+  c.innerHTML = '<div style="font-size:12px;color:var(--muted);text-align:center;margin-bottom:8px;" id="cinst">'+t('mg_color_inst_show')+'</div><div class="color-grid-mg" id="cgrid" style="grid-template-columns:repeat('+size+',1fr)"></div>';
+  const grid = document.getElementById('cgrid');
+  mgColorTarget.forEach((col,i) => {
+    const el = document.createElement('div');
+    el.className = 'color-cell';
+    el.style.background = col || 'var(--s3)';
+    grid.appendChild(el);
+  });
+  let remaining = positions.length;
+  setTimeout(() => {
+    grid.querySelectorAll('.color-cell').forEach(el => { el.style.background='var(--s3)'; });
+    document.getElementById('cinst').textContent = t('mg_color_inst_input');
+    mgColorState = 'input';
+    grid.querySelectorAll('.color-cell').forEach((el,i) => {
+      el.onclick = () => {
+        if (mgColorState !== 'input') return;
+        if (mgColorTarget[i]) {
+          el.style.background = mgColorTarget[i]; remaining--;
+          G.dgDistScore += 15; updateDistUI();
+          if (remaining <= 0) { mgColorState='done'; setTimeout(nextMG,400); }
+        } else {
+          el.style.background = 'var(--red)'; mgColorState='done';
+          G.dgDistScore = Math.max(0, G.dgDistScore-10);
+          setTimeout(nextMG, 500);
+        }
+      };
+    });
+  }, 2200);
+}
+
+function initMath() {
+  const ops=['+','-','×'], op=ops[Math.floor(Math.random()*3)];
+  let a,b,ans;
+  if(op==='+'){a=rand(10,50);b=rand(10,50);ans=a+b;}
+  else if(op==='-'){a=rand(30,80);b=rand(1,29);ans=a-b;}
+  else{a=rand(2,9);b=rand(2,9);ans=a*b;}
+  const w1=ans+rand(1,5)*(Math.random()>.5?1:-1);
+  const w2=ans+rand(6,15)*(Math.random()>.5?1:-1);
+  const opts=shuffle([ans,w1,w2]);
+  let done=false;
+  const c=document.getElementById('mg-content');
+  c.innerHTML=`<div class="math-q">${a} ${op} ${b} = ?</div><div class="math-opts">${opts.map(o=>`<button class="math-opt" onclick="mathPick(${o},${ans},this)">${o}</button>`).join('')}</div>`;
+}
+function mathPick(v,correct,btn) {
+  if(v===correct){btn.style.background='var(--teal)';btn.style.color='#000';G.dgDistScore+=25;updateDistUI();setTimeout(nextMG,400);}
+  else{btn.style.background='var(--red)';btn.style.color='#fff';G.dgDistScore=Math.max(0,G.dgDistScore-10);setTimeout(nextMG,500);}
+}
+function rand(a,b){return Math.floor(Math.random()*(b-a+1))+a;}
+
+// ─── RECALL ───
+function startRecall() {
+  clearInterval(G.dgDistInt);
+  // Generate 10 fill-in-blank questions
+  const picked = shuffle([...G.dgWords]).slice(0,10);
+  G.dgRecallQs = picked.map((w,qi) => {
+    const type = qi % 4;
+    const pos = G.dgWords.indexOf(w)+1;
+    if(type===0){
+      // 第N个词是什么？填中文
+      return {q:t('recall_q_nth',{pos}), sub:t('recall_hint_zh'), answer:w.zh, hint:t('recall_hint_zh'), type:'text'};
+    } else if(type===1){
+      // 填英文
+      return {q:t('recall_q_en',{zh:w.zh}), sub:t('recall_hint_en'), answer:w.en, hint:t('recall_hint_en'), type:'text'};
+    } else if(type===2){
+      // 填位置序号
+      return {q:t('recall_q_pos',{zh:w.zh}), sub:t('recall_hint_num'), answer:String(pos), hint:t('recall_hint_num'), type:'text'};
+    } else {
+      // 填类别
+      return {q:t('recall_q_cat',{zh:w.zh}), sub:w.cat, answer:w.cat, hint:w.cat[0]+'...', type:'text'};
+    }
+  });
+  G.dgRecallIdx=0; G.dgRecallScore=0;
+  setDGPhase(3);
+  showRecallQ();
+}
+
+function showRecallQ() {
+  if(G.dgRecallIdx>=G.dgRecallQs.length){endDG();return;}
+  const q=G.dgRecallQs[G.dgRecallIdx];
+  document.getElementById('recall-qnum').textContent='第 '+(G.dgRecallIdx+1)+' 题';
+  document.getElementById('recall-qtxt').textContent=q.q;
+  document.getElementById('recall-qsub').textContent=q.sub;
+  document.getElementById('recall-prog').textContent=(G.dgRecallIdx+1)+'/'+G.dgRecallQs.length;
+  document.getElementById('recall-score').textContent=G.dgRecallScore;
+  const oc=document.getElementById('recall-opts');
+  oc.innerHTML=`
+    <div class="recall-blank-row">
+      <input class="recall-input" id="recall-inp" type="text" placeholder="${q.hint}" autocomplete="off" autocorrect="off" spellcheck="false">
+      <button class="recall-submit" onclick="submitRecall()">'+t('recall_submit')+'</button>
+    </div>
+    <div id="recall-reveal" class="recall-answer-reveal"></div>`;
+  const inp = document.getElementById('recall-inp');
+  inp.focus();
+  inp.addEventListener('keydown', e => { if(e.key==='Enter') submitRecall(); });
+}
+
+function submitRecall() {
+  const inp = document.getElementById('recall-inp');
+  const rev = document.getElementById('recall-reveal');
+  if(!inp||inp.disabled) return;
+  inp.disabled = true;
+  const q = G.dgRecallQs[G.dgRecallIdx];
+  const userAns = inp.value.trim();
+  const correct = q.answer;
+  // Fuzzy match: ignore case, spaces
+  const normalize = s => s.toLowerCase().replace(/\s+/g,'').replace(/[。，！？,.!?]/g,'');
+  const ok = normalize(userAns) === normalize(correct);
+  if(ok){
+    inp.classList.add('ok');
+    rev.textContent = t('recall_correct');
+    rev.style.color='var(--teal)';
+    G.dgRecallScore += 100;
+  } else {
+    inp.classList.add('no');
+    rev.innerHTML = t('recall_wrong_prefix')+`<strong style="color:var(--teal)">${correct}</strong>`;
+    rev.style.color='var(--red)';
+    G.dgRecallScore = Math.max(0, G.dgRecallScore);
+  }
+  document.getElementById('recall-score').textContent=G.dgRecallScore;
+  G.dgRecallIdx++;
+  setTimeout(showRecallQ, 1400);
+}
+
+function endDG() {
+  const total=G.dgRecallQs.length*100;
+  const acc=Math.round((G.dgRecallScore/total)*100);
+  showResults({type:'solo',icon:acc>=80?'🧠':acc>=50?'😊':'💪',
+    title:acc>=80?'记忆力超强！':acc>=50?'不错！':'继续训练！',
+    sub:`记忆准确率 ${acc}%\n分心得分 ${G.dgDistScore}`,
+    score:G.dgRecallScore+G.dgDistScore, time:acc+'%', miss:(G.dgRecallQs.length-Math.round(G.dgRecallScore/100))+'题'});
+}
+
+// ════════════════════════════════════
+//  RESULTS
+// ════════════════════════════════════
+
+// ════════════════════════════════════
+//  I18N — Internationalization
+// ════════════════════════════════════
+let LANG = localStorage.getItem('lang') || 'zh';
+
+const I18N = {
+  zh: {
+    // Home
+    daily_training: '今日训练',
+    hero_html: '脑力<span style="color:var(--teal);">对决</span> 🧠',
+    choose_mode: '选择模式',
+    solo_badge: '单人',
+    mode1_title: '记忆翻牌',
+    mode1_desc: '翻开卡片找到所有配对，挑战速度与记忆力极限',
+    pk_badge: '双人PK',
+    mode2_title: '对战翻牌',
+    mode2_desc: '两人同屏对战！轮流翻牌，谁配对多谁赢',
+    dg_badge: '记忆挑战',
+    mode3_title: '我画我猜',
+    mode3_desc: '20组词语快闪 → 分心小游戏 → 随机考验你的记忆！',
+    leaderboard: '本周排行 🏅',
+    nav_home: '主页',
+    nav_hist: '记录',
+    // PK setup
+    pk_setup_title: '⚔️ 对战设置',
+    pk_setup_sub: '输入两位玩家名字，开始对决！',
+    player1_lbl: '🔴 玩家 1',
+    player2_lbl: '🔵 玩家 2',
+    enter_name: '输入名字...',
+    select_diff: '选择难度',
+    diff_easy: '🌱 简单',
+    diff_med:  '🔥 中等',
+    diff_hard: '⚡ 困难',
+    start_pk: '开始对战 ⚔️',
+    // Level select
+    level_select_title: '🃏 选择关卡',
+    level_unlock_hint: '通关后解锁下一关',
+    lv_best: '最高分',
+    // Game
+    mode_tag_solo: '🃏 单人模式',
+    mode_tag_pk: '⚔️ 对战模式',
+    progress: '进度',
+    hint_btn: '💡 提示',
+    hint_used: '✓ 已用',
+    restart: '🔄 重来',
+    // Results
+    play_again: '再玩一次 🔄',
+    go_home: '回主页',
+    lose_tag: '下次加油',
+    // History
+    hist_label: '记忆档案',
+    hist_title: '成长记录 📈',
+    best_score: '最高分',
+    avg_score: '平均分',
+    total_games: '总场次',
+    cur_rank: '当前段位',
+    no_data_rating: '暂无数据',
+    no_data_desc: '打一局看看你在哪个水平',
+    hist_list_empty: '暂无记录',
+    hist_list_cta: '去打一局吧！🎮',
+    hist_chart_sub: '与普通人均分（150）对比',
+    // DG Setup
+    dg_setup_title: '🎨 选择主题',
+    dg_setup_sub: 'AI将生成该主题的20个随机词组',
+    gen_words_btn: '✨ AI生成词组',
+    gen_loading_title: 'AI 正在生成词组...',
+    gen_done_title: '✨ 词组生成完毕！',
+    gen_fail_title: '⚠️ 生成失败，使用备用词库',
+    gen_words_ready: '词组已就绪！',
+    gen_ready_sub: '接下来快速显示 {n} 个词语，每个2秒。\n尽量记住！可以用纸笔辅助。',
+    start_mem: '开始记忆 →',
+    // Flash phase
+    flash_phase_label: '第一阶段 · 快速记忆',
+    flash_remember: '记住这个词！',
+    flash_hint: '👀 记住这个词！可以用纸笔辅助记忆',
+    // Distraction
+    dist_phase_label: '第二阶段 · 注意力干扰',
+    dist_score_label: '分心得分',
+    dist_timer_label: '分心得分',
+    mg_seq: '数字顺序',
+    mg_color: '颜色记忆',
+    mg_math: '快速心算',
+    mg_seq_inst_show: '记住顺序...',
+    mg_seq_inst_input: '按顺序点击！',
+    mg_color_inst_show: '记住颜色位置！',
+    mg_color_inst_input: '点击有颜色的格子！',
+    // Recall
+    recall_phase_label: '第三阶段 · 回忆测试',
+    recall_question: '你还记得吗？',
+    recall_score_label: '记忆得分',
+    recall_submit: '确认',
+    recall_correct: '✓ 正确！',
+    recall_wrong_prefix: '✗ 答错了，正确答案是：',
+    recall_q_nth: '第 {pos} 个词是？',
+    recall_q_en: '"{zh}" 的英文是？',
+    recall_q_pos: '"{zh}" 出现在第几个？',
+    recall_q_cat: '"{zh}" 属于哪个类别？',
+    recall_hint_zh: '中文',
+    recall_hint_en: 'English',
+    recall_hint_num: '数字',
+    // Quit overlay
+    quit_title: '退出游戏',
+    quit_sub: '进度将丢失，确定退出吗？',
+    quit_continue: '继续游戏',
+    quit_exit: '退出',
+    // Countdown
+    cd_start: '游戏开始！',
+    cd_round: '第{n}关 开始！',
+    cd_again: '再来一局！',
+    cd_battle: '对战开始！',
+    // End game
+    title_timeout: '时间到！',
+    title_perfect: '完美通关！',
+    title_cleared: '通关！',
+    title_gameover: '游戏结束！',
+    // PK results
+    pk_draw: '平局！',
+    pk_end: '对战结束！',
+    pk_draw_sub: '两人势均力敌！',
+    win_tag: '胜利！',
+    draw_tag: '平局！',
+    // Stats labels
+    stat_score: '得分',
+    stat_time: '用时',
+    stat_miss: '错误',
+    stat_combo: '连击',
+    stat_errors: '错误',
+    prog_label: '进度',
+    // Taunts (same as existing TAUNTS object)
+    mode_solo: '翻牌单人',
+    mode_pk: '翻牌对战',
+    mode_dg: '我画我猜',
+    turn_match: '配对成功！再来一次 🎉',
+    turn_next: '— 轮到你了！',
+    turn_first: '先手开始！',
+    next_level_btn: '下一关：{name} ▶',
+    level_best_lab: '最高分',
+    // Theme names
+    themes: {
+      '随机混合': {en:'Random Mix', ja:'ランダム'},
+      '日常生活': {en:'Daily Life', ja:'日常生活'},
+      '自然与动物': {en:'Nature & Animals', ja:'自然と動物'},
+      '科技与未来': {en:'Tech & Future', ja:'テクノロジー'},
+      '文化与艺术': {en:'Culture & Art', ja:'文化と芸術'},
+      '体育与运动': {en:'Sports', ja:'スポーツ'},
+      '食物与美食': {en:'Food & Cuisine', ja:'食べ物'},
+      '职业与工作': {en:'Careers & Work', ja:'職業と仕事'},
+    },
+  },
+
+  en: {
+    daily_training: "Today's Training",
+    hero_html: 'Brain<span style="color:var(--teal);">Battle</span> 🧠',
+    choose_mode: 'Choose Mode',
+    solo_badge: 'Solo',
+    mode1_title: 'Memory Flip',
+    mode1_desc: 'Flip cards to find all pairs — race against time and memory!',
+    pk_badge: '2P Battle',
+    mode2_title: 'Battle Flip',
+    mode2_desc: 'Local 2-player showdown! Take turns flipping, most pairs wins!',
+    dg_badge: 'Memory Quiz',
+    mode3_title: 'Flash & Recall',
+    mode3_desc: '20 words flash by → distraction games → random recall test!',
+    leaderboard: 'Leaderboard 🏅',
+    nav_home: 'Home',
+    nav_hist: 'Stats',
+    pk_setup_title: '⚔️ Battle Setup',
+    pk_setup_sub: 'Enter player names and let the battle begin!',
+    player1_lbl: '🔴 Player 1',
+    player2_lbl: '🔵 Player 2',
+    enter_name: 'Enter name...',
+    select_diff: 'Select Difficulty',
+    diff_easy: '🌱 Easy',
+    diff_med:  '🔥 Medium',
+    diff_hard: '⚡ Hard',
+    start_pk: 'Start Battle ⚔️',
+    level_select_title: '🃏 Select Level',
+    level_unlock_hint: 'Clear a level to unlock the next',
+    lv_best: 'Best',
+    mode_tag_solo: '🃏 Solo Mode',
+    mode_tag_pk: '⚔️ Battle Mode',
+    progress: 'Progress',
+    hint_btn: '💡 Hint',
+    hint_used: '✓ Used',
+    restart: '🔄 Retry',
+    play_again: 'Play Again 🔄',
+    go_home: 'Home',
+    lose_tag: 'Better luck next time',
+    hist_label: 'Memory Archive',
+    hist_title: 'Progress Log 📈',
+    best_score: 'Best',
+    avg_score: 'Avg',
+    total_games: 'Games',
+    cur_rank: 'Current Rank',
+    no_data_rating: 'No data yet',
+    no_data_desc: 'Play a game to see your rank',
+    hist_list_empty: 'No records yet',
+    hist_list_cta: 'Play a game! 🎮',
+    hist_chart_sub: 'vs. average score (150)',
+    dg_setup_title: '🎨 Choose Theme',
+    dg_setup_sub: 'AI will generate 20 random words on this theme',
+    gen_words_btn: '✨ Generate Words',
+    gen_loading_title: 'AI is generating words...',
+    gen_done_title: '✨ Words Ready!',
+    gen_fail_title: '⚠️ Failed, using backup words',
+    gen_words_ready: 'Words Ready!',
+    gen_ready_sub: '{n} words are about to flash by, 2s each.\nTry to remember! Pen & paper allowed.',
+    start_mem: 'Start →',
+    flash_phase_label: 'Phase 1 · Flash Memory',
+    flash_remember: 'Remember this word!',
+    flash_hint: '👀 Remember each word! Pen & paper OK',
+    dist_phase_label: 'Phase 2 · Distraction',
+    dist_score_label: 'Distraction Score',
+    mg_seq: 'Number Sequence',
+    mg_color: 'Color Memory',
+    mg_math: 'Quick Math',
+    mg_seq_inst_show: 'Memorize the order...',
+    mg_seq_inst_input: 'Tap in order!',
+    mg_color_inst_show: 'Memorize positions!',
+    mg_color_inst_input: 'Tap the colored cells!',
+    recall_phase_label: 'Phase 3 · Recall Test',
+    recall_question: 'Do you remember?',
+    recall_score_label: 'Memory Score',
+    recall_submit: 'Submit',
+    recall_correct: '✓ Correct!',
+    recall_wrong_prefix: '✗ Wrong! Answer: ',
+    recall_q_nth: 'What was word #{pos}?',
+    recall_q_en: 'English for "{zh}"?',
+    recall_q_pos: 'What position was "{zh}"?',
+    recall_q_cat: 'Category of "{zh}"?',
+    recall_hint_zh: 'Chinese',
+    recall_hint_en: 'English',
+    recall_hint_num: 'Number',
+    quit_title: 'Quit Game',
+    quit_sub: 'Progress will be lost. Quit?',
+    quit_continue: 'Keep Playing',
+    quit_exit: 'Quit',
+    cd_start: 'Game Start!',
+    cd_round: 'Level {n}!',
+    cd_again: 'One More!',
+    cd_battle: 'Battle Start!',
+    title_timeout: "Time's Up!",
+    title_perfect: 'Perfect Clear!',
+    title_cleared: 'Cleared!',
+    title_gameover: 'Game Over!',
+    pk_draw: 'Draw!',
+    pk_end: 'Battle Over!',
+    pk_draw_sub: 'Evenly matched!',
+    win_tag: 'Winner!',
+    draw_tag: 'Draw!',
+    stat_score: 'Score',
+    stat_time: 'Time',
+    stat_miss: 'Misses',
+    stat_combo: 'Combo',
+    prog_label: 'Progress',
+    mode_solo: 'Solo Flip',
+    mode_pk: 'Battle Flip',
+    mode_dg: 'Flash Recall',
+    turn_match: 'Match! Go again 🎉',
+    turn_next: '— Your turn!',
+    turn_first: 'First mover!',
+    next_level_btn: 'Next: {name} ▶',
+    level_best_lab: 'Best',
+    themes: {
+      '随机混合': {en:'Random Mix', ja:'ランダム'},
+      '日常生活': {en:'Daily Life', ja:'日常生活'},
+      '自然与动物': {en:'Nature & Animals', ja:'自然と動物'},
+      '科技与未来': {en:'Tech & Future', ja:'テクノロジー'},
+      '文化与艺術': {en:'Culture & Art', ja:'文化と芸術'},
+      '体育与运动': {en:'Sports', ja:'スポーツ'},
+      '食物与美食': {en:'Food & Cuisine', ja:'食べ物'},
+      '职业与工作': {en:'Careers', ja:'職業'},
+    },
+  },
+
+  ja: {
+    daily_training: '今日のトレーニング',
+    hero_html: '脳力<span style="color:var(--teal);">バトル</span> 🧠',
+    choose_mode: 'モードを選択',
+    solo_badge: 'ソロ',
+    mode1_title: '神経衰弱',
+    mode1_desc: 'カードをめくってペアを探せ！速さと記憶力の限界に挑戦！',
+    pk_badge: '2人対戦',
+    mode2_title: '対戦神経衰弱',
+    mode2_desc: '2人で交互にめくる！より多くペアを取った方の勝ち！',
+    dg_badge: '記憶チャレンジ',
+    mode3_title: 'フラッシュ記憶',
+    mode3_desc: '20単語が瞬時に表示 → 妨害ゲーム → ランダムテスト！',
+    leaderboard: '今週ランキング 🏅',
+    nav_home: 'ホーム',
+    nav_hist: '記録',
+    pk_setup_title: '⚔️ 対戦設定',
+    pk_setup_sub: 'プレイヤー名を入力して対戦開始！',
+    player1_lbl: '🔴 プレイヤー 1',
+    player2_lbl: '🔵 プレイヤー 2',
+    enter_name: '名前を入力...',
+    select_diff: '難易度を選択',
+    diff_easy: '🌱 かんたん',
+    diff_med:  '🔥 ふつう',
+    diff_hard: '⚡ むずかしい',
+    start_pk: '対戦開始 ⚔️',
+    level_select_title: '🃏 レベル選択',
+    level_unlock_hint: 'クリアして次のレベルを解放',
+    lv_best: 'ベスト',
+    mode_tag_solo: '🃏 ソロモード',
+    mode_tag_pk: '⚔️ 対戦モード',
+    progress: '進捗',
+    hint_btn: '💡 ヒント',
+    hint_used: '✓ 使用済み',
+    restart: '🔄 やり直し',
+    play_again: 'もう一度 🔄',
+    go_home: 'ホームへ',
+    lose_tag: '次は頑張れ',
+    hist_label: '記憶アーカイブ',
+    hist_title: '成長記録 📈',
+    best_score: '最高点',
+    avg_score: '平均点',
+    total_games: '総ゲーム数',
+    cur_rank: '現在のランク',
+    no_data_rating: 'データなし',
+    no_data_desc: 'プレイしてランクを確認しよう',
+    hist_list_empty: '記録なし',
+    hist_list_cta: 'プレイしよう！🎮',
+    hist_chart_sub: '平均点（150）との比較',
+    dg_setup_title: '🎨 テーマ選択',
+    dg_setup_sub: 'AIが20個のランダムな単語を生成します',
+    gen_words_btn: '✨ 単語を生成',
+    gen_loading_title: 'AIが単語を生成中...',
+    gen_done_title: '✨ 単語準備完了！',
+    gen_fail_title: '⚠️ 失敗、バックアップ使用',
+    gen_words_ready: '単語準備完了！',
+    gen_ready_sub: '{n}個の単語が2秒ずつ表示されます。\n覚えよう！メモOK！',
+    start_mem: '記憶開始 →',
+    flash_phase_label: 'フェーズ1・瞬間記憶',
+    flash_remember: 'この単語を覚えて！',
+    flash_hint: '👀 各単語を覚えよう！メモOK',
+    dist_phase_label: 'フェーズ2・妨害ゲーム',
+    dist_score_label: '妨害スコア',
+    mg_seq: '数字の順番',
+    mg_color: '色の記憶',
+    mg_math: '暗算',
+    mg_seq_inst_show: '順番を覚えて...',
+    mg_seq_inst_input: '順番にタップ！',
+    mg_color_inst_show: '色の位置を覚えて！',
+    mg_color_inst_input: '色のマスをタップ！',
+    recall_phase_label: 'フェーズ3・想起テスト',
+    recall_question: '覚えてる？',
+    recall_score_label: '記憶スコア',
+    recall_submit: '確認',
+    recall_correct: '✓ 正解！',
+    recall_wrong_prefix: '✗ 不正解。正解は：',
+    recall_q_nth: '{pos}番目の単語は？',
+    recall_q_en: '"{zh}"の英語は？',
+    recall_q_pos: '"{zh}"は何番目？',
+    recall_q_cat: '"{zh}"のカテゴリは？',
+    recall_hint_zh: '中国語',
+    recall_hint_en: 'English',
+    recall_hint_num: '数字',
+    quit_title: 'ゲームを終了',
+    quit_sub: '進捗が失われます。終了しますか？',
+    quit_continue: '続ける',
+    quit_exit: '終了',
+    cd_start: 'スタート！',
+    cd_round: 'レベル{n}！',
+    cd_again: 'もう一局！',
+    cd_battle: '対戦開始！',
+    title_timeout: '時間切れ！',
+    title_perfect: '完璧クリア！',
+    title_cleared: 'クリア！',
+    title_gameover: 'ゲームオーバー！',
+    pk_draw: '引き分け！',
+    pk_end: '対戦終了！',
+    pk_draw_sub: '互角の戦いでした！',
+    win_tag: '勝利！',
+    draw_tag: '引き分け！',
+    stat_score: 'スコア',
+    stat_time: 'タイム',
+    stat_miss: 'ミス',
+    stat_combo: 'コンボ',
+    prog_label: '進捗',
+    mode_solo: 'ソロ神経衰弱',
+    mode_pk: '対戦神経衰弱',
+    mode_dg: 'フラッシュ記憶',
+    turn_match: 'ペア！もう一度 🎉',
+    turn_next: '— あなたの番！',
+    turn_first: '先攻スタート！',
+    next_level_btn: '次のレベル：{name} ▶',
+    level_best_lab: 'ベスト',
+    themes: {
+      '随机混合': {en:'Random Mix', ja:'ランダム'},
+      '日常生活': {en:'Daily Life', ja:'日常生活'},
+      '自然与动物': {en:'Nature & Animals', ja:'自然と動物'},
+      '科技与未来': {en:'Tech & Future', ja:'テクノロジー'},
+      '文化与艺术': {en:'Culture & Art', ja:'文化と芸術'},
+      '体育与运动': {en:'Sports', ja:'スポーツ'},
+      '食物与美食': {en:'Food & Cuisine', ja:'食べ物'},
+      '职业与工作': {en:'Careers', ja:'職業'},
+    },
+  }
+};
+
+function t(key, vars) {
+  const str = I18N[LANG]?.[key] || I18N['zh'][key] || key;
+  if (!vars) return str;
+  return str.replace(/{(\w+)}/g, (_, k) => vars[k] ?? '');
+}
+
+function setLang(lang) {
+  LANG = lang;
+  localStorage.setItem('lang', lang);
+  // Update lang buttons
+  ['zh','en','ja'].forEach(l => {
+    const btn = document.getElementById('lb-'+l);
+    if (btn) btn.classList.toggle('on', l === lang);
+  });
+  // Apply all data-i18n text
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    el.textContent = t(key);
+  });
+  // Apply placeholder translations
+  document.querySelectorAll('[data-i18n-ph]').forEach(el => {
+    const key = el.getAttribute('data-i18n-ph');
+    el.placeholder = t(key);
+  });
+  // Hero title (has inner HTML)
+  const hero = document.getElementById('t-hero');
+  if (hero) hero.innerHTML = t('hero_html');
+  // Update dynamic choose-mode label
+  const cm = document.getElementById('t-choose-mode');
+  if (cm) cm.textContent = t('choose_mode');
+  // Update theme chip names
+  document.querySelectorAll('.theme-chip').forEach(chip => {
+    const zhName = chip.dataset.theme;
+    const themeMap = I18N[LANG].themes?.[zhName];
+    const nameEl = chip.querySelector('.tc-name');
+    if (nameEl && themeMap) {
+      nameEl.textContent = lang === 'zh' ? zhName : (themeMap[lang] || zhName);
+    }
+  });
+  // Update generate button
+  const genBtn = document.getElementById('gen-btn');
+  if (genBtn) genBtn.textContent = t('gen_words_btn');
+  // Update hint button if visible
+  const hb = document.getElementById('hint-btn');
+  if (hb && !hb.disabled) hb.textContent = t('hint_btn');
+  // Update recall submit if present
+  const rs = document.querySelector('.recall-submit');
+  if (rs) rs.textContent = t('recall_submit');
+  // Refresh history page if active
+  if (document.getElementById('pg-history').classList.contains('active')) renderHistory();
+}
+
+// Apply lang on load
+window.addEventListener('DOMContentLoaded', () => setLang(LANG));
+
+// ════════════════════════════════════
+//  RATING SYSTEM
+// ════════════════════════════════════
+const RATINGS = [
+  {min:0,  max:59,  key:'npc',   emoji:'🥴',title:'NPC',    cls:'r-npc',  desc:'连NPC都不如...系统怀疑你是随机点的',color:'rgba(200,200,200,.6)'},
+  {min:60, max:119, key:'la',    emoji:'💩',title:'拉',     cls:'r-la',   desc:'在平均线以下苦苦挣扎，要不要放弃？（是认真的）',color:'var(--red)'},
+  {min:120,max:169, key:'normal',emoji:'😐',title:'夯',     cls:'r-normal',desc:'普通人水平，芸芸众生中的一粒沙',color:'var(--blue)'},
+  {min:170,max:219, key:'hang',  emoji:'💪',title:'顶尖',   cls:'r-hang', desc:'超越了大多数普通人，还不错嘛',color:'var(--teal)'},
+  {min:220,max:269, key:'top',   emoji:'🧠',title:'人上人', cls:'r-top',  desc:'记忆力碾压95%的人，你妈喊你去高考',color:'var(--yellow)'},
+  {min:270,max:999, key:'god',   emoji:'👑',title:'人上人·神',cls:'r-god',desc:'这不正常，怀疑你开了外挂，或者你脑子有问题（好的那种）',color:'var(--purple)'},
+];
+const AVG_SCORE = 150;
+const MAX_SCORE = 300;
+
+const TAUNTS = {
+  npc:{
+    win:['恭喜你终于赢了，但赢得如此勉强，建议去看看脑科','这也叫赢？这分数你奶奶随机点都能比你高','系统记录到一个奇迹：你居然没放弃，虽然成绩一言难尽'],
+    lose:['意料之中，毕竟你连NPC都不如','这局直接帮你保存了，方便以后研究自己是怎么输的','不要伤心，不是每个人都需要记忆力的，比如鱼'],
+    timeout:['时间到了！你还在发呆？','60秒你翻了这么几对...金鱼表示羡慕','系统已自动忽略本局，假装没发生过']
+  },
+  la:{
+    win:['赢了，但低空飞过，再低一点就掉地上了','成绩比均线低这么多，你是来受苦的吗','建议回家多吃核桃，核桃补脑，这是有科学依据的'],
+    lose:['被时间追着跑还没跑过，这很说明问题','失败了，但我相信你已经尽力了——这才是最悲哀的部分','下次可以试试闭眼，说不定更好'],
+    timeout:['时间跑完了，你的牌还没翻完，效率感人','60秒你找到这几对？我家的狗都能做得更好','限时对你来说可能太残忍了，要不要试试无限时？']
+  },
+  normal:{
+    win:['普通人打法，中规中矩，毫无亮点，跟你一起玩的人可能有点无聊','成绩达到全国平均，可喜可贺，可喜可贺（打哈欠）','嗯，就这样，普通，不出错也不出彩，人生的写照'],
+    lose:['平均分都没到，让平均线都觉得有点尴尬','加把劲，你只差一点就能变成普通人了','差点就够着平均线了，就差那一点点，可惜'],
+    timeout:['来不及了，你的记忆力跑得比时钟慢','普通人级别的速度，但今天发挥失常了','别担心，普通人有时候也会更普通']
+  },
+  hang:{
+    win:['不错，超过了大多数普通人，但离真正厉害还差得远','上游水平，继续努力就能踏入顶尖行列——也许','赢了，还赢得挺体面的，给你20分'],
+    lose:['发挥失常？还是本来就这样？','以你的水平输掉这局，有点可惜，或者你只是假厉害','没关系，实力允许偶尔摆烂'],
+    timeout:['计时压力下翻车，平时应该不是这个水平吧？','还没到最顶尖，但已经很能打了，可惜今天时间不够用','时间比你快一点，下次一定']
+  },
+  top:{
+    win:['记忆力相当可以，碾压了95%的普通人，值得表扬','人上人档位！你妈一定很为你骄傲，她只是没说出来','这成绩正常人根本达不到，你确定你是人类？'],
+    lose:['好吧，就算高手也有失误的时候，勉强接受','以你的实力翻车，今天是不是没睡好？','人上人也有马失前蹄的时候，期待下局翻盘'],
+    timeout:['这么强的人被时间打败，有点意外，建议练速度','手速没跟上脑速，这是个技术问题','水平在线，但今天时间不站你这边']
+  },
+  god:{
+    win:['👑 神级发挥！怀疑你开了外挂，请自查','你的大脑已不属于人类范畴，请去参加世界记忆锦标赛','这成绩让开发者感到不安，你是不是看了源代码？'],
+    lose:['神级玩家居然输了？这是谦让还是系统bug了','不可能！除非你故意的！','就算是神也有陨落的时候，但是神，真的会输？'],
+    timeout:['神级记忆力，被时间打败了，速度是你的软肋','智慧超群，手速跟不上，建议报名打字速成班','大脑顶尖，手指拖后腿，不平衡啊']
+  }
+};
+
+function getRating(score){return RATINGS.find(r=>score>=r.min&&score<=r.max)||RATINGS[0];}
+function getTaunt(key,result){const pool=TAUNTS[key]?.[result]||TAUNTS.normal.win;return pool[Math.floor(Math.random()*pool.length)];}
+
+// ════════════════════════════════════
+//  HISTORY
+// ════════════════════════════════════
+function loadHistory(){try{return JSON.parse(localStorage.getItem('brain_history')||'[]');}catch(e){return[];}}
+function saveHistory(h){localStorage.setItem('brain_history',JSON.stringify(h.slice(-50)));}
+function addHistory(e){const h=loadHistory();h.push({...e,ts:Date.now()});saveHistory(h);}
+
+// ════════════════════════════════════
+//  RESULTS
+// ════════════════════════════════════
+let lastRes = null;
+function showResults(d) {
+  lastRes = d;
+  showPage('pg-results');
+  document.getElementById('res-icon').textContent = d.icon;
+  document.getElementById('res-title').textContent = d.title;
+
+  if (d.type === 'pk') {
+    document.getElementById('res-stats-solo').style.display = 'none';
+    document.getElementById('res-stats-pk').style.display = 'flex';
+    document.getElementById('score-meter-wrap').style.display = 'none';
+    document.getElementById('rating-badge').style.display = 'none';
+    const tied = d.w.pairs === d.l.pairs;
+    document.getElementById('pk-r1-name').textContent = d.w.name;
+    document.getElementById('pk-r1-pts').textContent = d.w.pts;
+    document.getElementById('pk-r1-tag').textContent = tied?t('draw_tag'):t('win_tag');
+    document.getElementById('pk-row1').className = 'pk-res-row'+(tied?'':' win');
+    document.getElementById('pk-r2-name').textContent = d.l.name;
+    document.getElementById('pk-r2-pts').textContent = d.l.pts;
+    const pkTaunt = tied
+      ? ['两人记忆力半斤八两，一对废物','平局！系统不知道该嘲笑谁，于是嘲笑所有人','没有赢家，只有两个普通人'][Math.floor(Math.random()*3)]
+      : [d.w.name+'赢了，'+d.l.name+'，你的记忆力需要充值', d.l.name+'输了，不用难过，至少你参与了'][Math.floor(Math.random()*2)];
+    document.getElementById('taunt-txt').textContent = pkTaunt;
+    document.getElementById('taunt-box').style.display = '';
+  } else {
+    document.getElementById('res-stats-solo').style.display = 'flex';
+    document.getElementById('res-stats-pk').style.display = 'none';
+    document.getElementById('score-meter-wrap').style.display = '';
+    document.getElementById('rating-badge').style.display = '';
+    document.getElementById('taunt-box').style.display = '';
+    document.getElementById('rs-score').textContent = d.score;
+    document.getElementById('rs-time').textContent = d.time;
+    document.getElementById('rs-miss').textContent = d.miss;
+
+    const score = d.score;
+    const rating = getRating(score);
+    const result = d.timeout ? 'timeout' : score < AVG_SCORE ? 'lose' : 'win';
+
+    // Rating badge
+    document.getElementById('rating-badge').className = 'rating-badge ' + rating.cls;
+    document.getElementById('rating-emoji').textContent = rating.emoji;
+    document.getElementById('rating-title').textContent = rating.title;
+    document.getElementById('rating-desc').textContent = rating.desc;
+
+    // Score meter
+    const pct = Math.min(score/MAX_SCORE*100, 100);
+    const avgPct = Math.min(AVG_SCORE/MAX_SCORE*100, 100);
+    document.getElementById('meter-score-lbl').textContent = '得分 '+score;
+    document.getElementById('meter-max-lbl').textContent = MAX_SCORE;
+    document.getElementById('meter-fill').style.background = rating.color;
+    document.getElementById('meter-fill').style.width = '0%';
+    document.getElementById('meter-dot').style.left = '0%';
+    document.getElementById('meter-avg-line').style.left = avgPct+'%';
+    setTimeout(()=>{
+      document.getElementById('meter-fill').style.width = pct+'%';
+      document.getElementById('meter-dot').style.left = pct+'%';
+    }, 300);
+
+    // Taunt
+    document.getElementById('taunt-txt').textContent = getTaunt(rating.key, result);
+
+    // Save history
+    addHistory({score, rating:rating.key, ratingTitle:rating.title, ratingEmoji:rating.emoji, mode:G.mode, miss:d.miss, time:d.time});
+    const best = parseInt(localStorage.getItem('best')||'0');
+    if(score > best){localStorage.setItem('best',score);document.getElementById('my-best').textContent=score;}
+    // Show next level button if won
+    const nlBtn = document.getElementById('next-lv-btn');
+    const paBtn = document.getElementById('play-again-btn');
+    if(d.won && d.nextLv !== null && d.nextLv !== undefined) {
+      nlBtn.style.display='block';
+      nlBtn.textContent = t('next_level_btn',{name:LEVELS[d.nextLv].name});
+      paBtn.textContent = '再来一次 🔄';
+    } else {
+      nlBtn.style.display='none';
+      paBtn.textContent = '再玩一次 🔄';
+    }
+  }
+}
+
+function playAgain() {
+  if (!lastRes) return;
+  if (G.mode==='pk') showPage('pg-pksetup');
+  else if (G.mode==='dg') showPage('pg-dgsetup');
+  else { showPage('pg-game'); countdown(t('cd_again'),()=>initCardGame(false,G.level)); }
+}
+function goNextLevel() {
+  if (!lastRes||lastRes.nextLv===null||lastRes.nextLv===undefined) return;
+  const lv = lastRes.nextLv;
+  G.level = lv;
+  showPage('pg-game');
+  countdown(LEVELS[lv].name+' '+t('cd_start'), ()=>initCardGame(false,lv));
+}
+
+// ════════════════════════════════════
+//  HISTORY PAGE
+// ════════════════════════════════════
+function switchTab(tab) {
+  if (tab==='home') {
+    showPage('pg-home');
+    document.getElementById('bntab-home').classList.add('on');
+    document.getElementById('bntab-hist').classList.remove('on');
+  } else {
+    showPage('pg-history');
+    document.getElementById('bntab-home').classList.remove('on');
+    document.getElementById('bntab-hist').classList.add('on');
+    renderHistory();
+  }
+}
+
+function renderHistory() {
+  const hist = loadHistory();
+  const listEl = document.getElementById('hist-list');
+  if (hist.length===0) {
+    listEl.innerHTML=('<div class="empty-state">'+t('hist_list_empty')+'<br><span style="font-size:12px;">'+t('hist_list_cta')+'</span></div>');
+    ['hs-best','hs-avg'].forEach(id=>document.getElementById(id).textContent='—');
+    document.getElementById('hs-games').textContent='0';
+    document.getElementById('hs-cur-rating').textContent='暂无数据';
+    document.getElementById('hs-cur-emoji').textContent='🤔';
+    document.getElementById('hs-cur-desc').textContent='打一局看看你在哪个水平';
+    drawChart([]);
+    return;
+  }
+  const scores = hist.map(h=>h.score);
+  const best = Math.max(...scores);
+  const avg = Math.round(scores.reduce((a,b)=>a+b,0)/scores.length);
+  document.getElementById('hs-best').textContent = best;
+  document.getElementById('hs-avg').textContent = avg;
+  document.getElementById('hs-games').textContent = hist.length;
+  const recentScores = scores.slice(-3);
+  const recentAvg = Math.round(recentScores.reduce((a,b)=>a+b,0)/recentScores.length);
+  const curR = getRating(recentAvg);
+  document.getElementById('hs-cur-emoji').textContent = curR.emoji;
+  document.getElementById('hs-cur-rating').textContent = curR.title;
+  document.getElementById('hs-cur-desc').textContent = '近'+recentScores.length+'局均分 '+recentAvg;
+  drawChart(scores.slice(-15));
+  const reversed = [...hist].reverse();
+  listEl.innerHTML='';
+  reversed.forEach((h,i)=>{
+    const prev = reversed[i+1];
+    const delta = prev ? h.score-prev.score : null;
+    const deltaStr = delta===null?'':delta>0?'↑ +'+delta:delta<0?'↓ '+delta:'→ 持平';
+    const deltaCls = delta===null?'':delta>0?'up':delta<0?'dn':'eq';
+    const r = getRating(h.score);
+    const modeLabel = {solo:t('mode_solo'),pk:t('mode_pk'),dg:t('mode_dg')}[h.mode]||h.mode;
+    const date = new Date(h.ts);
+    const ds = (date.getMonth()+1)+'/'+date.getDate()+' '+String(date.getHours()).padStart(2,'0')+':'+String(date.getMinutes()).padStart(2,'0');
+    const el = document.createElement('div');
+    el.className='hist-item';
+    el.innerHTML=`<div class="hi-dot" style="background:rgba(255,255,255,.07);">${h.ratingEmoji||r.emoji}</div><div class="hi-info"><div class="hi-rating">${h.ratingTitle||r.title}</div><div class="hi-detail">${modeLabel} · ${ds}</div></div><div class="hi-right"><div class="hi-score">${h.score}</div>${delta!==null?`<div class="hi-delta ${deltaCls}">${deltaStr}</div>`:''}</div>`;
+    listEl.appendChild(el);
+  });
+}
+
+function drawChart(scores) {
+  const canvas = document.getElementById('hist-chart');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const W = canvas.offsetWidth||320, H=120;
+  canvas.width=W*window.devicePixelRatio; canvas.height=H*window.devicePixelRatio;
+  ctx.scale(window.devicePixelRatio,window.devicePixelRatio);
+  ctx.clearRect(0,0,W,H);
+  if(scores.length===0){
+    ctx.fillStyle='rgba(255,255,255,.2)';ctx.font='12px Nunito';ctx.textAlign='center';
+    ctx.fillText(t('no_data_rating'),W/2,H/2);return;
+  }
+  const pad={top:18,bottom:18,left:8,right:8};
+  const cW=W-pad.left-pad.right, cH=H-pad.top-pad.bottom;
+  function xp(i){return pad.left+(scores.length===1?cW/2:i/(scores.length-1)*cW);}
+  function yp(v){return pad.top+cH-(v/MAX_SCORE)*cH;}
+  // avg line
+  const ay=yp(AVG_SCORE);
+  ctx.strokeStyle='rgba(255,255,255,.18)';ctx.setLineDash([3,4]);ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(pad.left,ay);ctx.lineTo(W-pad.right,ay);ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle='rgba(255,255,255,.3)';ctx.font='9px DM Mono';ctx.textAlign='right';
+  ctx.fillText((LANG==='en'?'Avg ':LANG==='ja'?'均値 ':'均线')+AVG_SCORE,W-pad.right,ay-3);
+  // fill
+  const gr=ctx.createLinearGradient(0,pad.top,0,H);
+  gr.addColorStop(0,'rgba(62,207,178,.3)');gr.addColorStop(1,'rgba(62,207,178,0)');
+  ctx.fillStyle=gr;ctx.beginPath();
+  ctx.moveTo(xp(0),H);
+  scores.forEach((s,i)=>i===0?ctx.moveTo(xp(i),yp(s)):ctx.lineTo(xp(i),yp(s)));
+  ctx.lineTo(xp(scores.length-1),H);ctx.closePath();ctx.fill();
+  // line
+  ctx.strokeStyle='#3ECFB2';ctx.lineWidth=2.5;ctx.lineJoin='round';
+  ctx.beginPath();scores.forEach((s,i)=>i===0?ctx.moveTo(xp(i),yp(s)):ctx.lineTo(xp(i),yp(s)));ctx.stroke();
+  // dots
+  scores.forEach((s,i)=>{
+    const x=xp(i),y=yp(s),r=getRating(s);
+    ctx.fillStyle='#0A0A14';ctx.beginPath();ctx.arc(x,y,5,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle=r.color||'#3ECFB2';ctx.beginPath();ctx.arc(x,y,3.5,0,Math.PI*2);ctx.fill();
+    if(i===scores.length-1){ctx.fillStyle='#fff';ctx.font='bold 10px DM Mono';ctx.textAlign='center';ctx.fillText(s,x,y-8);}
+  });
+}
+
+// ════════════════════════════════════
+//  UTILS
+// ════════════════════════════════════
+function shuffle(a){const r=[...a];for(let i=r.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[r[i],r[j]]=[r[j],r[i]];}return r;}
+function updateClock(){const n=new Date();const t=String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0');document.querySelectorAll('#clock,#clock2,#clock3').forEach(el=>el&&(el.textContent=t));}
+updateClock();setInterval(updateClock,15000);
+const saved=localStorage.getItem('best');
+if(saved)document.getElementById('my-best').textContent=saved;
+if(window.innerWidth<=430){
+  document.querySelector('.device').style.cssText='width:100vw;height:100vh;border-radius:0;box-shadow:none;';
+  document.querySelector('.screen-wrap').style.borderRadius='0';
+  const di=document.querySelector('.di');if(di)di.style.display='none';
+  document.querySelectorAll('.overlay').forEach(el=>el.style.borderRadius='0');
+}
+</script>
+</body>
+</html>
